@@ -10,6 +10,8 @@ sstr(x, n = 10, ...)
 \item{x}{list, matrix or data frame, otherwise converts to data.frame}
 
 \item{n}{number of columns to sample}
+
+\item{...}{arguments passed to ...}
 }
 \description{
 Print the structure of a sample of columns or list elements

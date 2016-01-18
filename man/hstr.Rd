@@ -2,7 +2,7 @@
 % Please edit documentation in R/hstr.R
 \name{hstr}
 \alias{hstr}
-\title{Compute 'str' on the first n elements or columns}
+\title{Compute 'str' on the first n list elements or columns}
 \usage{
 hstr(x, n = 10, ...)
 }
@@ -11,9 +11,9 @@ hstr(x, n = 10, ...)
 
 \item{n}{number of list elements or columns}
 
-\item{ids}{vector of list element ids or column ids (default 1:n)}
+\item{...}{arguments passed to ...}
 }
 \description{
-Compute 'str' on the first n elements or columns
+Compute 'str' on the first n list elements or columns
 }
 
