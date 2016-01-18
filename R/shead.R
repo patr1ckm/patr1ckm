@@ -1,14 +1,23 @@
-#' Sample rows or columns of a matrix
+#' Sample rows and columns of a matrix
 #'
-#' @param x matrix or data frame
-#' @param n number of rows or columns to select
-#' @param scol T/F. sample columns? Defaults to 'T'
-shead <- function(x,n=10,scol=T){
-  srow <- sample(1:nrow(x),size=n,replace=F)
-  if(scol){
-    scol <- sample(1:ncol(x),size=n,replace=F)
-  } else {
-    scol <- 1:ncol(x)
+#' @param x matrix or data frame, otherwise converts to a matrix
+#' @param nrow number of rows to sample
+#' @param ncol number of columns to sample (defaults to nrow)
+#' @param rows vector of row ids. If specified, rows are selected by row id and not sampled
+#' @param cols vector of column ids. If specified, columns are selected by column id and not sampled
+sh <- function(x,nrow=10,ncol=nrow,rows=NULL,cols=NULL){
+  if(!(class(x) == "matrix" | class(x) == "data.frame")){
+    x <- as.matrix(x)
   }
-  x[srow,scol]
+  if(is.null(rows)){
+    rows <- sample(1:nrow(x),size=min(nrow(x),nrow),replace=F)
+  }
+  if(is.null(cols)){
+    cols <- sample(1:ncol(x),size=min(ncol(x),ncol),replace=F)
+  }
+  x[rows,cols]
 }
+
+#sh(1:3)
+#sh(1:3,rows=1:3)
+#sh(matrix(1:100,100,9),nrow=10,ncol=3)
