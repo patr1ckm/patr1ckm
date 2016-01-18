@@ -1,5 +1,5 @@
 
-
+# Credit: Taken from:  http://stackoverflow.com/questions/1358003/tricks-to-manage-the-available-memory-in-an-r-session
 lsos <- function (..., n = 10)
 {
   .ls.objects(..., order.by = "Size", decreasing = TRUE, head = TRUE,

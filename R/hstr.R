@@ -1,14 +1,18 @@
-#' Compute 'str' on the first n elements or columns
+#' Compute 'str' on the first n list elements or columns
 #'
-#' @param x vector, list, matrix or data.frame
+#' @param x list, matrix or data.frame, otherwise converts to data.frame
 #' @param n number of list elements or columns
-#' @param ids vector of list element ids or column ids (default 1:n)
-hstr <- function(x,n=10,ids=NULL,...){
-  if(!(class(x) == "matrix" | class(x) == "data.frame")){
+#' @param ... arguments passed to ...
+hstr <- function(x,n=10,...){
+  if(class(x) == "matrix" | class(x) == "data.frame"){
+    n <- min(ncol(x),n)
+    str(x[,1:n],...)
+  } else if (class(x) == "list") {
+    n <- min(length(x),n)
+    str(x[1:n],...)
+  } else {
     x <- as.data.frame(x)
+    n <- min(ncol(x),n)
+    str(x[,1:n],...)
   }
-  if(is.null(cols)) {
-    cols = 1:min(ncol(x), n)
-  }
-  str(x[,cols],...)
 }
