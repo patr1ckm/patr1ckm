@@ -18,6 +18,3 @@ sh <- function(x,nrow=10,ncol=nrow,rows=NULL,cols=NULL){
   x[rows,cols]
 }
 
-#sh(1:3)
-#sh(1:3,rows=1:3)
-#sh(matrix(1:100,100,9),nrow=10,ncol=3)

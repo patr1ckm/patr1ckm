@@ -15,6 +15,5 @@ hh <- function(x,n=10,ncols=n,cols=NULL){
   x[1:n,cols]
 }
 
-#hh(1:3)
-#hh(matrix(1:100,100,9))
+
 
