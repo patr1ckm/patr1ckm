@@ -7,9 +7,9 @@
 ht(x, nrows = 10, ncols = nrows)
 }
 \arguments{
-\item{x}{matrix or data frame, otherwise converts to a data.frame}
+\item{x}{list, matrix or data frame}
 
-\item{nrow}{number of rows to return}
+\item{nrow}{number of rows to return (or list elements)}
 
 \item{ncol}{number of columns to return (default: nrow))}
 }
