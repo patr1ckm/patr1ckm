@@ -12,6 +12,7 @@
 #' fac2num(x)
 #'
 #' @export
+#' @references from package \code{kbroman}
 #'
 fac2num <-
   function(x)
