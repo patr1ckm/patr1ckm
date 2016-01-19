@@ -3,6 +3,7 @@
 #' @param x list, matrix or data frame, otherwise converts to data.frame
 #' @param n number of columns to sample
 #' @param ... arguments passed to ...
+#' @export
 sstr <- function(x,n=10,...){
   if(class(x) == "matrix" | class(x) == "data.frame"){
     n <- min(ncol(x),n)

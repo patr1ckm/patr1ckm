@@ -1,5 +1,10 @@
-#@ minss minimum sample size of pattern to plot
-#@ topvars top number of variables
+#' plots missing values
+#'
+#' @param d data
+#' @param main title
+#' @param varnames variable names
+#' @param minss minimum sample size of pattern to plot
+#' @param topvars top number of variables
 plotMissing <- function(d,main="",varnames=NULL,minss=50,transpose=FALSE,...) {
   require(rsem)
   require(corrplot)

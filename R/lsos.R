@@ -1,5 +1,15 @@
 
-# Credit: Taken from:  http://stackoverflow.com/questions/1358003/tricks-to-manage-the-available-memory-in-an-r-session
+#' list objects and sizes
+#'
+#' Easy way to manage memory, commonly suggested to put this in .Rprofile.
+#' Here it is in a package.
+#'
+#' @param ... environment (usually the global one)
+#' @param n  number of items to report
+#' @export
+#' @references
+#' \url{http://stackoverflow.com/questions/1358003/tricks-to-manage-the-available-memory-in-an-r-session}
+#' Also available in package \code{dmisc}
 lsos <- function (..., n = 10)
 {
   .ls.objects(..., order.by = "Size", decreasing = TRUE, head = TRUE,
