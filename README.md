@@ -15,5 +15,5 @@ A few handy R functions
 - `fac2num` - convert factors to numbers (from `kbroman`)
 
 - `lsos` - print objects and sizes (from `dmisc`, others)
-- `le` - return the `i`th element from each element of a nested list (i.e. x[[1]][[1]])
+- `le` - return the `i`th element from each element of a nested list (i.e. x[[1]][[i]])
 - `ule` - return the `i`th element from each element of a nested list, and unlist
