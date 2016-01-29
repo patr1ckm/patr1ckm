@@ -1,11 +1,11 @@
 
 x <- matrix(1:100,100,9)
-xl <- list(1:3,1:3)
+xl <- list(1:3,1:4)
 xdf <- as.data.frame(x)
 
 expect_equal(dim(hh(x,3)),c(3,3))
 expect_equal(length(hh(1:3)),3)
-expect_equal(dim(hh(xl)),c(3,2))
+expect_equal(length(hh(xl)),2)
 
 expect_true(any(sh(1:9) != 1:9))
 expect_equal(sh(1:3,rows=1:3),1:3)
