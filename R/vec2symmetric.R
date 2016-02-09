@@ -10,7 +10,7 @@
 #' @param byrow the elements in x are ordered row-wise (default = \code{FALSE})
 #' @export
 vec2sym <- function(x,diagonal=NULL,lower=TRUE,byrow=FALSE){
-  p <- (sqrt(1 + 8 * length(x)) - 1)/2 # solution to quadratic formula
+  p <- (sqrt(1 + 8 * length(x)) + 1)/2 # solution to quadratic formula
   S <- diag(p)
   if((!lower & byrow) | (lower & !byrow)){
     S[lower.tri(S)] <- x

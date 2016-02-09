@@ -11,3 +11,4 @@ expect_equal(vec2sym(x,diag=1,lower=T,byrow=T),check) # lower tri by row
 expect_equal(vec2sym(x,diag=1,lower=F,byrow=F),check) # upper tri by col
 
 expect_equal(diag(vec2sym(x,diag=0,lower=F,byrow=F)),rep(0,4)) # check diag argument
+
