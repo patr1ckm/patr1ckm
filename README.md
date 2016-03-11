@@ -14,6 +14,10 @@ A few handy R functions
 - `le` - return the `i`th element from each element of a nested list (i.e. x[[1]][[i]])
 - `ule` - return the `i`th element from each element of a nested list, and unlist
 
+## Simulations
+- `do.cond` - apply the function `f` `reps` times over arguments passed to `...` 
+
+
 ### Handy R idioms
 - `lsos` - print objects and sizes (from `dmisc`, others)
 - `applyna` - apply `is.na` to margins of a matrix
