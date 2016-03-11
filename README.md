@@ -15,8 +15,7 @@ A few handy R functions
 - `ule` - return the `i`th element from each element of a nested list, and unlist
 
 ## Simulations
-- `do.cond` - apply the function `f` `reps` times over arguments passed to `...` 
-
+- `gapply` apply the function `f` `reps` times over grid of arguments
 
 ### Handy R idioms
 - `lsos` - print objects and sizes (from `dmisc`, others)
