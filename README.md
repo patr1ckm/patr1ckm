@@ -15,7 +15,7 @@ A few handy R functions
 - `ule` - return the `i`th element from each element of a nested list, and unlist
 
 ## Simulations
-- `gapply` apply the function `f` `reps` times over grid of arguments
+- `gapply` apply the function `f` `reps` times over grid of arguments in parallel
 
 ### Handy R idioms
 - `lsos` - print objects and sizes (from `dmisc`, others)
