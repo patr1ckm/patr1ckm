@@ -3,6 +3,7 @@
 export(applyna)
 export(do.cond)
 export(fac2num)
+export(gapply)
 export(hh)
 export(hstr)
 export(ht)
