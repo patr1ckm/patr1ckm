@@ -13,7 +13,7 @@
 #' names(conds.ls) <- NULL
 #' do.one <- function(a=1,b=2){a+b}
 #' lapply(conds.ls, do.cond, FUN=do.one, reps=5)
-do.cond <- function(f,reps,...){ do.call(rbind, lapply(1:reps,function(r, f, ...){ do.call(f,...)}, f=f, ...))}
+do.rep <- function(f,reps,...){ do.call(rbind, lapply(1:reps,function(r, f, ...){ do.call(f,...)}, f=f, ...))}
 
 # conds <- expand.grid(a=1:3,b=4:5)
 # conds.ls <- split(conds, 1:nrow(conds))
