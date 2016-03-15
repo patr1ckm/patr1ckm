@@ -21,7 +21,8 @@ gapply <- function(f, reps=1, mc.cores=1,...){
   names(param.ls) <- NULL
   res <- mclapply(param.ls, do.cond, f=f, reps=reps,mc.cores=mc.cores)
   long <- data.frame(res=do.call(rbind,res),param.id=rep(1:nrow(param.grid),each=reps))
-  long.param <- merge(long,data.frame(param.grid,param.id=1:nrow(param.grid)))
+  param.grid <- data.frame(param.grid, param.id=1:nrow(param.grid))
+  long.param <- merge(param.grid,long)
   names(long.param)[1] <- c("param.id")
   return(long.param)
 }
