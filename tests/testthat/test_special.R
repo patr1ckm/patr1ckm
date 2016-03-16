@@ -1,3 +1,5 @@
+context("is.special")
+
 expect_true(is.special(NA))
 expect_true(is.special(NaN))
 expect_true(is.special(Inf))

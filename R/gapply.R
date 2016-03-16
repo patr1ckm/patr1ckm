@@ -14,17 +14,19 @@
 #' do.one <- function(a=1,b=2){data.frame(sum=a+b,sub=a-b)}
 #' gapply(do.one,reps=5, a=1:4,b=2:3)
 #' @export
-gapply <- function(f, reps=1, mc.cores=1,...){
-  require(parallel)
+#' @importFrom tidyr gather
+#' @importFrom parallel mclapply
+gapply <- function(f, reps=1, mc.cores=1, ...){
   param.grid <- expand.grid(...)
   param.ls <- split(param.grid, 1:nrow(param.grid))
   names(param.ls) <- NULL
-  res <- mclapply(param.ls, do.rep, f=f, reps=reps,mc.cores=mc.cores)
-  long <- as.data.frame(cbind(param.id=rep(1:nrow(param.grid),each=reps),
-                              reps=rep(1:nrow(param.grid), times=reps),
+  res <- parallel::mclapply(param.ls, do.rep, f=f, reps=reps,mc.cores=mc.cores)
+  wide <- as.data.frame(cbind(param.id=rep(1:nrow(param.grid),each=reps),
+                              rep=rep(1:nrow(param.grid), times=reps),
                               do.call(rbind,res)))
-  param.grid <- data.frame(param.grid, param.id=1:nrow(param.grid))
-  long.param <- merge(param.grid,long)
+  long <- tidyr::gather(wide,key,value,-(1:2))
+  param.grid.id <- data.frame(param.grid, param.id=1:nrow(param.grid))
+  long.param <- merge(param.grid.id,long)
   return(long.param)
 }
 
