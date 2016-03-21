@@ -1,17 +1,19 @@
 #' Repeatedly apply a function over a grid of values in parallel
 #'
-#' gapply (grid apply) applies a function to a grid of it's parameters, optionally for a given number of replications
+#' gapply (grid apply) applies a function to a grid of it's parameters in parallel, optionally for a given number of replications
 #'
-#' @param f function to be evaluated, should return a value or vector for best results
+#' @param f function to be evaluated. The function must return a (named) value or (named) vector of values.
 #' @param reps times the function should be evaluated
 #' @param mc.cores attempts to split function evaluations over given number of cores
-#' @param ... arguments to \code{f} in the form \code{a=1:3, b=2:4}, etc. A grid of parameter values will be generated from values given to each argument
-#' @return Returns results as a data.frame in long form with first column \code{param.id}. This is followed
-#' by column \code{res} or column(s) \code{res.*} if results from \code{f} are named. The final columns contain the
-#' values of parameters.
+#' @param ... named arguments to \code{f} in the form \code{key=c(value1,value2, ...)} etc. 
+#' A grid of parameter values will be generated from values given to each named argument, as \code{expand.grid(...)}
+#' @return Returns results as a \code{data.frame} in long form with first column \code{param.id}, the row of \code{expand.grid(...)}.
+#' This is followed by columns of \code{expand.grid(...)}, followed by \code{rep} giving the replication number. 
+#' Finally \code{key} gives the name of the return value of \code{f},
+#' and \code{value} gives the value. if results from \code{f} are named. 
 #' @details Note that the function application (not replications) are distributed in parallel, will not work in Windows.
 #' @examples
-#' do.one <- function(a=1,b=2){data.frame(sum=a+b,sub=a-b)}
+#' do.one <- function(a=1,b=2){c(sum=a+b,sub=a-b)}
 #' gapply(do.one,reps=5, a=1:4,b=2:3)
 #' @export
 #' @importFrom tidyr gather
