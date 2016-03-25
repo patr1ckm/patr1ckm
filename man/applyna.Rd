@@ -2,16 +2,26 @@
 % Please edit documentation in R/applyna.R
 \name{applyna}
 \alias{applyna}
-\title{Apply is.na to elements in margin of array or matrix}
+\title{Apply is.na to vector in margin of array or matrix}
 \usage{
-applyna(x, mar = 2)
+applyna(x, mar = 2, FUN = I)
 }
 \arguments{
 \item{x}{array, matrix, or data.frame}
 
 \item{mar}{margin: 1=rows, 2=columns, etc.}
+
+\item{FUN}{function to be applied to \code{is.na(vector)}, 
+where \code{vector} is the vector of \code{x} implied by \code{mar}.
+ Default is \code{I}, returning a logical vector.}
 }
 \description{
-Apply is.na to elements in margin of array or matrix
+Apply is.na to vector in margin of array or matrix
+}
+\examples{
+x <- matrix(5,5,5)
+x[2,3] <- NA
+applyna(x,2)
+applyna(x,2,mean)
 }
 
