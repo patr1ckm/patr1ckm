@@ -1,9 +1,9 @@
 context("le, ule")
 x <- list(list(1,2,3),list(1,2,3,4,5))
 
-expect_output(le(x),"")
-expect_output(ule(x),"")
+expect_is(le(x),"list")
+expect_is(ule(x),"numeric")
 
-expect_output(le(x,2),"")
-expect_output(ule(x,2),"")
+expect_is(le(x,2),"list")
+expect_is(ule(x,2),"numeric")
 
