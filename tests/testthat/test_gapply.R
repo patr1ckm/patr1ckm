@@ -36,15 +36,25 @@ expect_equal(colnames(out),c("param.id","a","b","rep","key","value"))
 # Test that key is a factor, and has the correct levels
 expect_equal(unique(out$key),factor(c("sum","sub"),levels=c("sum","sub")))
 
+## One row in param.grid with multiple reps
+do.one <- function(a=1,b=2){data.frame(sum=a+b,sub=a-b)}
+out <- gapply(do.one,reps=3, a=1,b=2,verbose=0)
+expect_equal(unique(out$rep),1:3)
+expect_equal(out$value,c(3,3,3,-1,-1,-1))
+
+
 ## verbose
 expect_output(out <- gapply(do.one,reps=2, a=1:3,b=2:5,verbose=1), ".")
 expect_output(out <- gapply(do.one,reps=2, a=1:3,b=2:5,verbose=2), "a = ")
 expect_output(out <- gapply(do.one,reps=2, a=1:3,b=2:5,verbose=3), "c()")
 
 ## elapsed time
-out <- gapply(do.one,reps=2, a=1:3,b=2:5,verbose=0)
+do.one <- function(a=1,b=2){Sys.sleep(1); return(1)}
+out <- gapply(do.one,reps=2,verbose=1, a=1,b=1)
 expect_is(attr(out,"time"), "proc_time")
 attributes(out)
+
+
 
 expect_output(summary(out), "Source:")
 expect_output(summary(out), "Estimated time")

@@ -32,7 +32,7 @@ gapply <- function(f, reps=1, mc.cores=1, verbose=1, ...){
   res <- parallel::mclapply(param.ls, do.rep, f=f, reps=reps,mc.cores=mc.cores, verbose=verbose)
   end <- proc.time()
   wide <- as.data.frame(cbind(param.id=rep(1:nrow(param.grid),each=reps),
-                              rep=rep(1:nrow(param.grid), times=reps),
+                              rep=rep(1:reps, times=nrow(param.grid)),
                               do.call(rbind,res)))
   long <- tidyr::gather(wide,key,value,-(1:2))
   param.grid.id <- data.frame(param.grid, param.id=1:nrow(param.grid))
@@ -63,9 +63,9 @@ gapply <- function(f, reps=1, mc.cores=1, verbose=1, ...){
 #' do.one <- function(a=1,b=2){a+b}
 #' lapply(conds.ls, do.cond, FUN=do.one, reps=5)
 do.rep <- function(f,reps,verbose=1,...){
-  if(verbose==1){cat(".")}
   if(verbose %in% c(2,3)){cat(paste(names(...),"=", ...),fill=T)}
   res <- do.call(rbind, lapply(1:reps,function(r, f, ...){ do.call(f,...)}, f=f, ...))
+  if(verbose==1){cat(".")}
   if(verbose == 3) { cat(paste(names(res), "=", res),fill=T)}
   as.data.frame(res) # need this to get automatic reasonable naming of columns as default
 }
