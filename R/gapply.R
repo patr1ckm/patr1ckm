@@ -12,8 +12,8 @@
 #' A grid of parameter values will be generated from values given to each named argument, as \code{expand.grid(...)}
 #' @return Returns results as a \code{data.frame} in long form with the following columns:
 #' \item{\code{param.id}}{the row of \code{expand.grid(...)}}
-#' \item{...}{Columns corresponding to grid of parameters given in \code{expand.grid(...)}
-#' \item{\code{rep}}{giving the replication number.}
+#' \item{...}{Columns corresponding to grid of parameters given in \code{expand.grid(...)}}
+#' \item{\code{rep}}{giving the replication number}
 #' \item{\code{key}}{giving the name(s) of the return value(s) of \code{f}}
 #' \item{\code{value}}{gives the value}
 #' @details If the values returned by \code{f} are not named, they will be named according to the rules of \code{as.data.frame}, typically \code{V1, V2, ...}. 

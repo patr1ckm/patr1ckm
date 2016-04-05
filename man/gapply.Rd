@@ -20,6 +20,14 @@ If \code{3}, prints the arguments and results of the completed condition.}
 \item{...}{named arguments to \code{f} in the form \code{key=c(value1,value2, ...)} etc. 
 A grid of parameter values will be generated from values given to each named argument, as \code{expand.grid(...)}}
 }
+\value{
+Returns results as a \code{data.frame} in long form with the following columns:
+\item{\code{param.id}}{the row of \code{expand.grid(...)}}
+\item{...}{Columns corresponding to grid of parameters given in \code{expand.grid(...)}}
+\item{\code{rep}}{giving the replication number}
+\item{\code{key}}{giving the name(s) of the return value(s) of \code{f}}
+\item{\code{value}}{gives the value}
+}
 \description{
 gapply (grid apply) applies a function to a grid of it's parameters in parallel, optionally for a given number of replications
 }
