@@ -74,10 +74,11 @@ do.rep <- function(f,reps,verbose=1,...){
 #' @param object gapply result object
 #' @param nreps number of reps to scale to
 #' @return Prints the means over all reps for each condition and returns it invisibly. Also prints the estimated time to scale up to x reps
+#' @importFrom dplyr group_by_ summarize
 #' @export
 summary.gapply <- function(object, nreps=NULL){
   ns <- c(attr(object, 'arg.names'),"key")
-  means <- object %>% group_by_(.dots=ns) %>% summarize(mean(value), sd(value))
+  means <- object %>% dplyr::group_by_(.dots=ns) %>% dplyr::summarize(mean(value), sd(value))
   print(means)
   cat("",fill=T)
   cat("Estimated time for x reps:", fill=T)
@@ -93,7 +94,10 @@ summary.gapply <- function(object, nreps=NULL){
 #' @export
 estimate.time <- function(object, nreps=NULL){
   if(is.null(nreps)){ nreps <- c(50,100,500,1000,5000,10000)}
-  o <- cbind(reps=nreps,time=unlist(lapply(attr(object,"time")[3]*nreps,FUN=nicetime)))
+  max.reps <- max(object$rep)
+  time.per.rep <- attr(object,"time")[3]/max.reps
+  times <- lapply(time.per.rep*nreps,FUN=nicetime)
+  o <- cbind(reps=nreps,times=times)
   return(o)  
 }
 
