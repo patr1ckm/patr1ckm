@@ -40,6 +40,8 @@ gapply <- function(f, reps=1, mc.cores=1, verbose=1, ...){
   class(long.param) <- c("gapply", class(long.param))
   attr(long.param, "time") <- end-start
   attr(long.param, "arg.names") <- colnames(param.grid)
+  attr(long.param, "f") <- f
+  attr(long.param, "grid") <- param.grid
   return(long.param)
 }
 
@@ -65,7 +67,7 @@ gapply <- function(f, reps=1, mc.cores=1, verbose=1, ...){
 do.rep <- function(f,reps,verbose=1,...){
   if(verbose %in% c(2,3)){cat(paste(names(...),"=", ...),fill=T)}
   res <- do.call(rbind, lapply(1:reps,function(r, f, ...){ do.call(f,...)}, f=f, ...))
-  if(verbose==1){cat(".")}
+  if(verbose==1){cat(".",fill=T)}
   if(verbose == 3) { cat(paste(names(res), "=", res),fill=T)}
   as.data.frame(res) # need this to get automatic reasonable naming of columns as default
 }
@@ -75,16 +77,23 @@ do.rep <- function(f,reps,verbose=1,...){
 #' @param nreps number of reps to scale to
 #' @return Prints the means over all reps for each condition and returns it invisibly. Also prints the estimated time to scale up to x reps
 #' @importFrom dplyr group_by_ summarize
+#' @importFrom tidyr %>%
 #' @export
 summary.gapply <- function(object, nreps=NULL){
   ns <- c(attr(object, 'arg.names'),"key")
   means <- object %>% dplyr::group_by_(.dots=ns) %>% dplyr::summarize(mean(value), sd(value))
   print(means)
   cat("",fill=T)
-  cat("Estimated time for x reps:", fill=T)
-  cat("Reps \t Time", fill=T)
-  o <- estimate.time(object, nreps=nreps)
-  for(i in 1:nrow(o)){ cat(paste0(o[i,],"\t"),fill=T)}
+  grid <- attr(object, "grid")
+  cat("Number of conditions: ", nrow(grid), fill=T)
+  print(head(grid))
+  cat("",fill=T)
+  if(!is.null(attr(out,"time"))){
+    cat("Estimated time for x reps:", fill=T)
+    cat("Reps \t Time", fill=T)
+    o <- estimate.time(object, nreps=nreps)
+    for(i in 1:nrow(o)){ cat(paste0(o[i,],"\t"),fill=T)}
+  }
   invisible(means)
 }
 
