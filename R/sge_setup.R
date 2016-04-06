@@ -62,9 +62,8 @@ submit <- function(dir=""){
 #' Collect completed results files
 #' @export
 collect <- function(dir=""){
-  dir <- "tests/tmp/"
   load(paste0(dir, "param_grid.Rdata"))
-  rdir <- "tests/tmp/results/"
+  rdir <- paste0(dir, "results/")
   fls <- paste0(rdir,list.files(rdir))
   res.list <- list()
   for(i in 1:length(fls)){
