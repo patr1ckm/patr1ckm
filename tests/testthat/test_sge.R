@@ -5,7 +5,7 @@ out <- gapply(do.one,reps=2, a=1:2,b=2,verbose=0)
 system("mkdir tests/tmp")
 system("rm -rf tests/tmp/*")
 
-setup(out, dir="tests/tmp/")
+setup(out, dir="tests/tmp/", nreps = 5)
 
 ## This is a bad hack to get it to run right
 setwd("tests/tmp")

@@ -12,7 +12,7 @@ setup <- function(object, dir="", script.name="doone.R", ncores=1, nreps=1){
   cmd <- paste0("mkdir ", dir, "SGE_Output")
   mysys(cmd)
   sn <- paste0(dir, script.name)
-  write.submit(script.name=sn, ncores=ncores, nreps=nreps)
+  write.submit(dir, script.name=sn, ncores=ncores, nreps=nreps)
   save(param.grid, file=paste0(dir, "param_grid.Rdata"))
   write.do.one(f=f, script.name=sn, nreps=nreps)
 }
@@ -23,18 +23,20 @@ mysys <- function(cmd){
   system(cmd)
 }
 
-write.submit <- function(script.name="doone.R", ncores=1, nreps=1){
-  temp <- paste0("
-   #!/bin/bash
-   #$ -M patr1ckm.crc@gmail.com     # Email address for job notification
-   #$ -m a          # Send mail when job begins, ends and aborts
-   #$ -pe smp ",ncores,"     # environment and legal core size
-   #$ -q *@@daccss  # Specify queue
-   #$ -N patr1ckm   # Specify job name
-   #$ -t 1:", nreps, "        # number of reps
-   #$ -o SGE_Output
-   Rscript ", script.name, " $SGE_TASK_ID")
-  cat(temp,file="submit")
+write.submit <- function(dir="", script.name="doone.R", ncores=1, nreps=1){
+  cmd <- paste0("touch ", dir, "submit")
+  mysys(cmd)
+  temp <- paste0("#!/bin/bash
+#$ -M patr1ckm.crc@gmail.com     # Email address for job notification
+#$ -m a          # Send mail when job begins, ends and aborts
+#$ -pe smp ",ncores,"     # environment and legal core size
+#$ -q *@@daccss  # Specify queue
+#$ -N patr1ckm   # Specify job name
+#$ -t 1:", nreps, "        # number of reps
+#$ -o SGE_Output
+
+Rscript ", script.name, " $SGE_TASK_ID")
+  cat(temp,file=paste0(dir, "submit"))
 }
 
 write.do.one <- function(f, script.name="doone.R", nreps=1){
