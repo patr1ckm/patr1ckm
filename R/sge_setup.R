@@ -3,7 +3,7 @@
 #' setup sge simulation
 #' @param dir directory name relative to the current working directory, ends in '/'
 #' @export
-setup <- function(object, dir="", script.name="doone.R", ncores=1, nreps=1){
+setup <- function(object, dir="",  nreps=1, mc.cores=1, verbose=1, script.name="doone.R"){
   param.grid <- attr(object,"grid")
   f <- attr(object,"f")
   ## probably should use expand.dots, but whatever for now
@@ -12,24 +12,28 @@ setup <- function(object, dir="", script.name="doone.R", ncores=1, nreps=1){
   cmd <- paste0("mkdir ", dir, "SGE_Output")
   mysys(cmd)
   sn <- paste0(dir, script.name)
-  write.submit(dir, script.name=sn, ncores=ncores, nconds=nrow(param.grid))
+  write.submit(dir, script.name=sn, mc.cores=mc.cores, nconds=nrow(param.grid))
   save(param.grid, file=paste0(dir, "param_grid.Rdata"))
-  write.do.one(f=f, script.name=sn, nreps=nreps)
+  write.do.one(f=f,  nreps=nreps, verbose=verbose, script.name=sn)
 }
 
+
+qst <- function(){
+  mysys("qst")
+}
 
 mysys <- function(cmd){
   cat(cmd,fill=T)
   system(cmd)
 }
 
-write.submit <- function(dir="", script.name="doone.R", ncores=1, nconds=1){
+write.submit <- function(dir="", script.name="doone.R", mc.cores=1, nconds=1){
   cmd <- paste0("touch ", dir, "submit")
   mysys(cmd)
   temp <- paste0("#!/bin/bash
 #$ -M patr1ckm.crc@gmail.com     # Email address for job notification
 #$ -m a          # Send mail when job begins, ends and aborts
-#$ -pe smp ",ncores,"     # environment and legal core size
+#$ -pe smp ",mc.cores,"     # environment and legal core size
 #$ -q *@@daccss  # Specify queue
 #$ -N patr1ckm   # Specify job name
 #$ -t 1:", nconds, "        # number of rows in param.grid
@@ -39,14 +43,14 @@ Rscript ", script.name, " $SGE_TASK_ID")
   cat(temp,file=paste0(dir, "submit"))
 }
 
-write.do.one <- function(f, script.name="doone.R", nreps=1){
+write.do.one <- function(f, nreps=1, verbose=1, script.name="doone.R"){
   fstr <- paste0("f <- ", paste0(deparse(eval(f)),collapse=""))
   temp <- paste0(fstr,"
   args <- as.numeric(commandArgs(trailingOnly=TRUE))
   cond <- args[1]
   load('param_grid.Rdata')
   params <- param.grid[cond,]
-  res <- do.rep(f,", nreps, ",verbose=1, as.list(params))
+  res <- do.rep(f,", nreps, ",verbose=", verbose, ", as.list(params))
   fn <- paste0('results/cond_',cond,'.Rdata')
   save(res, file=fn)")
   cat(temp, file=script.name)
