@@ -12,7 +12,7 @@ setup <- function(object, dir="", script.name="doone.R", ncores=1, nreps=1){
   cmd <- paste0("mkdir ", dir, "SGE_Output")
   mysys(cmd)
   sn <- paste0(dir, script.name)
-  write.submit(dir, script.name=sn, ncores=ncores, nreps=nreps)
+  write.submit(dir, script.name=sn, ncores=ncores, nconds=nrow(param.grid))
   save(param.grid, file=paste0(dir, "param_grid.Rdata"))
   write.do.one(f=f, script.name=sn, nreps=nreps)
 }
@@ -23,7 +23,7 @@ mysys <- function(cmd){
   system(cmd)
 }
 
-write.submit <- function(dir="", script.name="doone.R", ncores=1, nreps=1){
+write.submit <- function(dir="", script.name="doone.R", ncores=1, nconds=1){
   cmd <- paste0("touch ", dir, "submit")
   mysys(cmd)
   temp <- paste0("#!/bin/bash
@@ -32,7 +32,7 @@ write.submit <- function(dir="", script.name="doone.R", ncores=1, nreps=1){
 #$ -pe smp ",ncores,"     # environment and legal core size
 #$ -q *@@daccss  # Specify queue
 #$ -N patr1ckm   # Specify job name
-#$ -t 1:", nreps, "        # number of reps
+#$ -t 1:", nconds, "        # number of rows in param.grid
 #$ -o SGE_Output
 
 Rscript ", script.name, " $SGE_TASK_ID")
