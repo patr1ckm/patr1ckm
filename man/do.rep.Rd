@@ -4,7 +4,7 @@
 \alias{do.rep}
 \title{Evaluate a function repeatedly over arbitrary arguments}
 \usage{
-do.rep(f, reps, verbose = 1, ...)
+do.rep(f, reps, verbose = 1, rep.cores = 1, ...)
 }
 \arguments{
 \item{f}{function to be evaluated}

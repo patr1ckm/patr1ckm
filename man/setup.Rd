@@ -4,8 +4,8 @@
 \alias{setup}
 \title{setup sge simulation}
 \usage{
-setup(object, dir = "", nreps = 1, mc.cores = 1, verbose = 1,
-  script.name = "doone.R")
+setup(object, dir = "", nreps = 1, chunk.size = nreps, mc.cores = 1,
+  verbose = 1, script.name = "doone.R")
 }
 \arguments{
 \item{dir}{directory name relative to the current working directory, ends in '/'}

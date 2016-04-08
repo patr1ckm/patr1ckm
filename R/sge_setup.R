@@ -3,18 +3,20 @@
 #' setup sge simulation
 #' @param dir directory name relative to the current working directory, ends in '/'
 #' @export
-setup <- function(object, dir="",  nreps=1, mc.cores=1, verbose=1, script.name="doone.R"){
+setup <- function(object, dir="",  nreps=1, chunk.size = nreps, mc.cores=1, verbose=1, script.name="doone.R"){
   param.grid <- attr(object,"grid")
+  chunks <- ceiling(nreps/chunk.size)
+  chunk.grid <- do.call(rbind,replicate(chunks, param.grid, simplify = F))
+  param.grid <- data.frame(chunk.grid, chunk=rep(1:chunks, each=nrow(param.grid)))
   f <- attr(object,"f")
-  ## probably should use expand.dots, but whatever for now
   cmd <- paste0("mkdir ", dir, "results") 
   mysys(cmd)
   cmd <- paste0("mkdir ", dir, "SGE_Output")
   mysys(cmd)
   sn <- paste0(dir, script.name)
-  write.submit(dir, script.name=sn, mc.cores=mc.cores, nconds=nrow(param.grid))
+  write.submit(dir, script.name=sn, mc.cores=mc.cores, tasks=nrow(param.grid))
   save(param.grid, file=paste0(dir, "param_grid.Rdata"))
-  write.do.one(f=f,  nreps=nreps, verbose=verbose, script.name=sn)
+  write.do.one(f=f,  nreps=nreps, chunk.size=chunk.size, mc.cores=mc.cores, verbose=verbose, script.name=sn)
 }
 
 
@@ -27,7 +29,7 @@ mysys <- function(cmd){
   system(cmd)
 }
 
-write.submit <- function(dir="", script.name="doone.R", mc.cores=1, nconds=1){
+write.submit <- function(dir="", script.name="doone.R", mc.cores=1, tasks=1){
   cmd <- paste0("touch ", dir, "submit")
   mysys(cmd)
   temp <- paste0("#!/bin/bash
@@ -36,22 +38,26 @@ write.submit <- function(dir="", script.name="doone.R", mc.cores=1, nconds=1){
 #$ -pe smp ",mc.cores,"     # environment and legal core size
 #$ -q *@@daccss  # Specify queue
 #$ -N patr1ckm   # Specify job name
-#$ -t 1:", nconds, "        # number of rows in param.grid
+#$ -t 1:", tasks, "        # number of rows in param.grid
 #$ -o SGE_Output
 
 Rscript ", script.name, " $SGE_TASK_ID")
   cat(temp,file=paste0(dir, "submit"))
 }
 
-write.do.one <- function(f, nreps=1, verbose=1, script.name="doone.R"){
+write.do.one <- function(f, nreps=1, chunk.size=nreps, mc.cores=1, verbose=1, script.name="doone.R"){
   fstr <- paste0("f <- ", paste0(deparse(eval(f)),collapse=""))
   temp <- paste0(fstr,"
   args <- as.numeric(commandArgs(trailingOnly=TRUE))
   cond <- args[1]
+  nReps <- ", nreps,"
   load('param_grid.Rdata')
   params <- param.grid[cond,]
-  res <- do.rep(f,", nreps, ",verbose=", verbose, ", as.list(params))
-  fn <- paste0('results/cond_',cond,'.Rdata')
+  reps <- (nReps*(params$chunk-1)+1):(nReps*params$chunk)
+  res <- do.rep(f,", nreps, ", rep.cores=", mc.cores, ", verbose=", verbose, ", as.list(params))
+  dir <- paste0('results/cond_', cond,'/')
+  system(paste0('mkdir ', dir))
+  fn <- paste0(dir, 'cond_', cond,'_reps_',reps[1],'-', reps[length(reps)],'.Rdata')
   save(res, file=fn)")
   cat(temp, file=script.name)
 }
@@ -68,14 +74,19 @@ submit <- function(dir=""){
 collect <- function(dir=""){
   load(paste0(dir, "param_grid.Rdata"))
   rdir <- paste0(dir, "results/")
-  fls <- paste0(rdir,list.files(rdir))
+  conds.files <- paste0(rdir,list.files(rdir))
   res.list <- list()
-  for(i in 1:length(fls)){
-    load(fls[i])
-    res.list[[i]] <- res
+  for(i in 1:length(conds.files)){
+    rep.files <- list.files(conds.files[[i]])
+    reps.list <- list()
+    for(j in 1:length(rep.files)){
+      load(paste0(conds.files[i], "/", rep.files[j]))
+      reps.list[[j]] <- res
+    }
+    res.list[[i]] <- do.call(rbind, reps.list)
   }
   res <- do.call(rbind, res.list)
-  reps <- nrow(res.list[[1]])
+  reps <- nrow(reps.list[[1]])
   wide <- as.data.frame(cbind(param.id=rep(1:nrow(param.grid),each=reps),
                               rep=rep(1:reps, times=nrow(param.grid)),
                               res))

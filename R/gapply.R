@@ -29,7 +29,7 @@ gapply <- function(f, reps=1, mc.cores=1, verbose=1, ...){
   param.ls <- split(param.grid, 1:nrow(param.grid))
   names(param.ls) <- NULL
   start <- proc.time()
-  res <- parallel::mclapply(param.ls, do.rep, f=f, reps=reps,mc.cores=mc.cores, verbose=verbose)
+  res <- parallel::mclapply(param.ls, do.rep, f=f, reps=reps,mc.cores=mc.cores, verbose=verbose, rep.cores=1)
   end <- proc.time()
   wide <- as.data.frame(cbind(param.id=rep(1:nrow(param.grid),each=reps),
                               rep=rep(1:reps, times=nrow(param.grid)),
@@ -64,11 +64,12 @@ gapply <- function(f, reps=1, mc.cores=1, verbose=1, ...){
 #' names(conds.ls) <- NULL
 #' do.one <- function(a=1,b=2){a+b}
 #' lapply(conds.ls, do.cond, FUN=do.one, reps=5)
-do.rep <- function(f,reps,verbose=1,...){
+do.rep <- function(f,reps,verbose=1,rep.cores=1,...){
   if(verbose %in% c(2,3)){cat(paste(names(...),"=", ...),fill=T)}
-  res <- do.call(rbind, lapply(1:reps,function(r, f, ...){ do.call(f,...)}, f=f, ...))
+  res.l <- mclapply(1:reps,function(r, f, ...){ try(do.call(f,...))}, f=f, ..., mc.cores=rep.cores)
+  res <- do.call(rbind, res.l)
   if(verbose==1){cat(".",fill=T)}
-  if(verbose == 3) { cat(paste(names(res), "=", res),fill=T)}
+  if(verbose == 3) { print(head(res))}
   as.data.frame(res) # need this to get automatic reasonable naming of columns as default
 }
 

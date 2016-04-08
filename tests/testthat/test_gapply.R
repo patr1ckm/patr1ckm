@@ -4,10 +4,10 @@ context("gapply")
 ## Single unnamed return value
 ## names assigned by as.data.frame (V1)
 do.one <- function(a=1,b=2){a+b}
-r <- do.rep(do.one,reps=2,verbose=0,list(a=1,b=2))
+r <- do.rep(do.one,reps=2,verbose=0,rep.cores=1,list(a=1,b=2))
 expect_equal(colnames(r), "V1")
 expect_equal(nrow(r),2)
-r <- do.rep(do.one,reps=8,verbose=0,list(a=1,b=2))
+r <- do.rep(do.one,reps=8,verbose=0,rep.cores=1,list(a=1,b=2))
 expect_equal(nrow(r),8)
 expect_equivalent(unique(r),3)
 
@@ -21,7 +21,7 @@ expect_equivalent(unique(out[,c("a","b")]), grid)
 ## Multiple unnamed return values
 ## Names should be assigned by as.data.frame rules (V1, V2)
 do.one <- function(a=1,b=2){c(a+b,a-b)}
-r <- do.rep(do.one,reps=2,verbose=0,list(a=1,b=2))
+r <- do.rep(do.one,reps=2,verbose=0,rep.cores=1, list(a=1,b=2))
 expect_equal(colnames(r), c("V1","V2"))
 
 out <- gapply(do.one,reps=2, a=1:2,b=2,verbose=0)
@@ -46,7 +46,7 @@ expect_equal(out$value,c(3,3,3,-1,-1,-1))
 ## verbose
 expect_output(out <- gapply(do.one,reps=2, a=1:3,b=2:5,verbose=1), ".")
 expect_output(out <- gapply(do.one,reps=2, a=1:3,b=2:5,verbose=2), "a = ")
-expect_output(out <- gapply(do.one,reps=2, a=1:3,b=2:5,verbose=3), "c()")
+expect_output(out <- gapply(do.one,reps=2, a=1:3,b=2:5,verbose=3), "sum sub")
 
 ## elapsed time
 do.one <- function(a=1,b=2){Sys.sleep(1); return(1)}
@@ -62,3 +62,7 @@ expect_output(summary(out), "Number of conditions: ")
 x <- summary(out)
 expect_is(x,"tbl")
 expect_equal(dim(x), c(2,5))
+
+do.one <- function(a=1,b=2){stop("this is an error")}
+out <- gapply(do.one,reps=2, a=1:2,b=2,verbose=0, mc.cores=2)
+
