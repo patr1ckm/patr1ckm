@@ -95,7 +95,7 @@ collect <- function(dir=""){
   long.param <- merge(param.grid.id,long)
   class(long.param) <- c("gapply", class(long.param))
   #attr(long.param, "time") <- end-start
-  attr(long.param, "arg.names") <- colnames(param.grid)
+  attr(long.param, "arg.names") <- colnames(param.grid)[-ncol(param.grid)]
   #attr(long.param, "f") <- f
   attr(long.param, "grid") <- param.grid
   return(long.param)
