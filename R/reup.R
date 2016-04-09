@@ -14,7 +14,7 @@ reup <- function(x){
 #' @export
 push <- function(m, f=NULL){
   if(!is.null(f)){ 
-    cmd <- paste0("git add R/", f)
+    cmd <- paste0("git add ", f)
     system(cmd)
   }
   cmd <- "git add -u"
