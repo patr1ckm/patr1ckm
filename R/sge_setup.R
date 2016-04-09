@@ -113,4 +113,14 @@ clean <- function(dir){
   }
 }
 
+#' test sge
+#' 
+#' @export
+testge <- function(dir){
+  f <- function(x,y){Sys.sleep(1); x}
+  out <- gapply(f, x=1:3, y=1:2)
+  setup(out, dir)
+  submit(dir)
+  collect(dir)
+}
 
