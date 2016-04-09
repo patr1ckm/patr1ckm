@@ -2,6 +2,7 @@
 #' 
 #' @export
 reup <- function(x){
+  detach("package:patr1ckm")
   remove.packages("patr1ckm")
   devtools::install_github("patr1ckm/patr1ckm")
   library(patr1ckm)
