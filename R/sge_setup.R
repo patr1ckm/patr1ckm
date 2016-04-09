@@ -13,8 +13,8 @@ setup <- function(object, dir="",  reps=1, chunks = 1, mc.cores=1, verbose=1, sc
   mysys(cmd)
   cmd <- paste0("mkdir -p ", dir, "SGE_Output")
   mysys(cmd)
-  sn <- paste0(dir, script.name)
-  write.submit(dir, script.name=sn, mc.cores=mc.cores, tasks=nrow(param.grid))
+  #sn <- paste0(dir, script.name)
+  write.submit(dir, script.name=script.name, mc.cores=mc.cores, tasks=nrow(param.grid))
   param.grid <- chunk.grid
   save(param.grid, file=paste0(dir, "param_grid.Rdata"))
   write.do.one(f=f,  reps=reps, mc.cores=mc.cores, verbose=verbose, script.name=sn)
@@ -113,14 +113,13 @@ clean <- function(dir){
   }
 }
 
-#' test sge
+#' sge
 #' 
 #' @export
-testge <- function(dir){
-  f <- function(x,y){Sys.sleep(1); x}
+sge <- function(dir){
+  f <- function(x,y){Sys.sleep(.5); x}
   out <- gapply(f, x=1:3, y=1:2)
   setup(out, dir)
   submit(dir)
-  collect(dir)
 }
 
