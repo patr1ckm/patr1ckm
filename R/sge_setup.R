@@ -11,7 +11,7 @@ setup <- function(object, dir="",  reps=1, chunks = 1, mc.cores=1, verbose=1, sc
   
   cmd <- paste0("mkdir -p ", dir, "results") 
   mysys(cmd)
-  cmd <- paste0("mkdir -p", dir, "SGE_Output")
+  cmd <- paste0("mkdir -p ", dir, "SGE_Output")
   mysys(cmd)
   sn <- paste0(dir, script.name)
   write.submit(dir, script.name=sn, mc.cores=mc.cores, tasks=nrow(param.grid))
