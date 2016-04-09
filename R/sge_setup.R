@@ -8,9 +8,10 @@ setup <- function(object, dir="",  reps=1, chunks = 1, mc.cores=1, verbose=1, sc
   chunk.grid <- param.grid[rep(1:nrow(param.grid), each=chunks),]
   chunk.grid$chunk <- rep(1:chunks, each=nrow(param.grid))
   f <- attr(object,"f")
-  cmd <- paste0("mkdir ", dir, "results") 
+  
+  cmd <- paste0("mkdir -p ", dir, "results") 
   mysys(cmd)
-  cmd <- paste0("mkdir ", dir, "SGE_Output")
+  cmd <- paste0("mkdir -p", dir, "SGE_Output")
   mysys(cmd)
   sn <- paste0(dir, script.name)
   write.submit(dir, script.name=sn, mc.cores=mc.cores, tasks=nrow(param.grid))
@@ -56,7 +57,7 @@ write.do.one <- function(f, reps=1, mc.cores=1, verbose=1, script.name="doone.R"
   rep.id <- (reps*(params$chunk-1)+1):(reps*params$chunk)
   res <- do.rep(f,", reps, ", rep.cores=", mc.cores, ", verbose=", verbose, ", as.list(params))
   dir <- paste0('results/cond_', cond,'/')
-  system(paste0('mkdir ', dir))
+  system(paste0('mkdir -p', dir))
   fn <- paste0(dir, 'cond_', cond,'_reps_',rep.id[1],'-', rep.id[reps],'.Rdata')
   save(res, file=fn)")
   cat(temp, file=script.name)

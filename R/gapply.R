@@ -68,8 +68,9 @@ do.rep <- function(f,reps,verbose=1,rep.cores=1,...){
   if(verbose %in% c(2,3)){cat(paste(names(...),"=", ...),fill=T)}
   res.l <- mclapply(1:reps,function(r, f, ...){ try(do.call(f,...))}, f=f, ..., mc.cores=rep.cores)
   res <- do.call(rbind, res.l)
-  if(verbose==1){cat(".",fill=T)}
+  if(verbose==1){cat(".")}
   if(verbose == 3) { print(head(res))}
+  cat("", fill=T)
   as.data.frame(res) # need this to get automatic reasonable naming of columns as default
 }
 
