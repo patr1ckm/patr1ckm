@@ -6,7 +6,7 @@ reup <- function(x){
   remove.packages("patr1ckm")
   #system("R CMD REMOVE patr1ckm")
   devtools::install_github("patr1ckm/patr1ckm")
-  library(patr1ckm)
+  q(save="no")
 }
 
 #' Push to github

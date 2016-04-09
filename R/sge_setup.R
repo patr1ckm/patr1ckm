@@ -17,7 +17,7 @@ setup <- function(object, dir="",  reps=1, chunks = 1, mc.cores=1, verbose=1, sc
   write.submit(dir, script.name=script.name, mc.cores=mc.cores, tasks=nrow(param.grid))
   param.grid <- chunk.grid
   save(param.grid, file=paste0(dir, "param_grid.Rdata"))
-  write.do.one(f=f,  reps=reps, mc.cores=mc.cores, verbose=verbose, script.name=sn)
+  write.do.one(f=f,  reps=reps, mc.cores=mc.cores, verbose=verbose, script.name=script.name)
 }
 
 
@@ -46,7 +46,7 @@ Rscript ", script.name, " $SGE_TASK_ID")
   cat(temp,file=paste0(dir, "submit"))
 }
 
-write.do.one <- function(f, reps=1, mc.cores=1, verbose=1, script.name="doone.R"){
+write.do.one <- function(f, dir, reps=1, mc.cores=1, verbose=1, script.name="doone.R"){
   fstr <- paste0("f <- ", paste0(deparse(eval(f)),collapse=""))
   temp <- paste0(fstr,"
   args <- as.numeric(commandArgs(trailingOnly=TRUE))
@@ -60,7 +60,8 @@ write.do.one <- function(f, reps=1, mc.cores=1, verbose=1, script.name="doone.R"
   system(paste0('mkdir -p', dir))
   fn <- paste0(dir, 'cond_', cond,'_reps_',rep.id[1],'-', rep.id[reps],'.Rdata')
   save(res, file=fn)")
-  cat(temp, file=script.name)
+  
+  cat(temp, file=paste0(dir, script.name))
 }
 
 #' Submit jobs to SGE
