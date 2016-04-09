@@ -13,11 +13,13 @@ setup <- function(object, dir="",  reps=1, chunks = 1, mc.cores=1, verbose=1, sc
   mysys(cmd)
   cmd <- paste0("mkdir -p ", dir, "SGE_Output")
   mysys(cmd)
-  #sn <- paste0(dir, script.name)
+  
   write.submit(dir, script.name=script.name, mc.cores=mc.cores, tasks=nrow(param.grid))
+
   param.grid <- chunk.grid
   save(param.grid, file=paste0(dir, "param_grid.Rdata"))
-  write.do.one(f=f,  reps=reps, mc.cores=mc.cores, verbose=verbose, script.name=script.name)
+  
+  write.do.one(f=f, dir=dir, reps=reps, mc.cores=mc.cores, verbose=verbose, script.name=script.name)
 }
 
 
