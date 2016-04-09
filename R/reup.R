@@ -4,12 +4,13 @@
 reup <- function(x){
   detach("package:patr1ckm")
   remove.packages("patr1ckm")
+  #system("R CMD REMOVE patr1ckm")
   devtools::install_github("patr1ckm/patr1ckm")
   library(patr1ckm)
 }
 
 #' Push to github
-#' 
+#' @param m commit message
 #' @export
 push <- function(m, f=NULL){
   if(!is.null(f)){ 
