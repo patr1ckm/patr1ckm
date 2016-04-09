@@ -2,6 +2,7 @@
 
 S3method(summary,gapply)
 export(applyna)
+export(clean)
 export(collect)
 export(do.rep)
 export(estimate.time)

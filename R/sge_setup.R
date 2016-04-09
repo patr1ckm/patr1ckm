@@ -3,11 +3,10 @@
 #' setup sge simulation
 #' @param dir directory name relative to the current working directory, ends in '/'
 #' @export
-setup <- function(object, dir="",  nreps=1, chunk.size = nreps, mc.cores=1, verbose=1, script.name="doone.R"){
+setup <- function(object, dir="",  reps=1, chunks = 1, mc.cores=1, verbose=1, script.name="doone.R"){
   param.grid <- attr(object,"grid")
-  chunks <- ceiling(nreps/chunk.size)
-  chunk.grid <- do.call(rbind,replicate(chunks, param.grid, simplify = F))
-  param.grid <- data.frame(chunk.grid, chunk=rep(1:chunks, each=nrow(param.grid)))
+  chunk.grid <- param.grid[rep(1:nrow(param.grid), each=chunks),]
+  chunk.grid$chunk <- rep(1:chunks, each=nrow(param.grid))
   f <- attr(object,"f")
   cmd <- paste0("mkdir ", dir, "results") 
   mysys(cmd)
@@ -15,8 +14,9 @@ setup <- function(object, dir="",  nreps=1, chunk.size = nreps, mc.cores=1, verb
   mysys(cmd)
   sn <- paste0(dir, script.name)
   write.submit(dir, script.name=sn, mc.cores=mc.cores, tasks=nrow(param.grid))
+  param.grid <- chunk.grid
   save(param.grid, file=paste0(dir, "param_grid.Rdata"))
-  write.do.one(f=f,  nreps=nreps, chunk.size=chunk.size, mc.cores=mc.cores, verbose=verbose, script.name=sn)
+  write.do.one(f=f,  reps=reps, mc.cores=mc.cores, verbose=verbose, script.name=sn)
 }
 
 
@@ -45,19 +45,19 @@ Rscript ", script.name, " $SGE_TASK_ID")
   cat(temp,file=paste0(dir, "submit"))
 }
 
-write.do.one <- function(f, nreps=1, chunk.size=nreps, mc.cores=1, verbose=1, script.name="doone.R"){
+write.do.one <- function(f, reps=1, mc.cores=1, verbose=1, script.name="doone.R"){
   fstr <- paste0("f <- ", paste0(deparse(eval(f)),collapse=""))
   temp <- paste0(fstr,"
   args <- as.numeric(commandArgs(trailingOnly=TRUE))
   cond <- args[1]
-  nReps <- ", nreps,"
+  reps <- ", reps,"
   load('param_grid.Rdata')
   params <- param.grid[cond,]
-  reps <- (nReps*(params$chunk-1)+1):(nReps*params$chunk)
-  res <- do.rep(f,", nreps, ", rep.cores=", mc.cores, ", verbose=", verbose, ", as.list(params))
+  rep.id <- (reps*(params$chunk-1)+1):(reps*params$chunk)
+  res <- do.rep(f,", reps, ", rep.cores=", mc.cores, ", verbose=", verbose, ", as.list(params))
   dir <- paste0('results/cond_', cond,'/')
   system(paste0('mkdir ', dir))
-  fn <- paste0(dir, 'cond_', cond,'_reps_',reps[1],'-', reps[length(reps)],'.Rdata')
+  fn <- paste0(dir, 'cond_', cond,'_reps_',rep.id[1],'-', rep.id[reps],'.Rdata')
   save(res, file=fn)")
   cat(temp, file=script.name)
 }
@@ -99,6 +99,17 @@ collect <- function(dir=""){
   #attr(long.param, "f") <- f
   attr(long.param, "grid") <- param.grid
   return(long.param)
+}
+
+#' Cleans results
+#' @param dir project directory name followed by 'slash'
+#' @export
+clean <- function(dir){
+  rdir <- paste0(dir, "results/")
+  if(file.exists(rdir)){
+    cmd <- paste0("rm -rf ", rdir)
+    mysys(cmd)
+  }
 }
 
 
