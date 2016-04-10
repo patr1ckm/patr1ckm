@@ -70,8 +70,11 @@ write.do.one <- function(f, dir, reps=1, mc.cores=1, verbose=1, script.name="doo
 #' Submit jobs to SGE
 #' @export
 submit <- function(dir=""){
+  wd <- getwd()
+  setwd(dir)
   cmd <- paste0("qsub ", dir, "submit")
   mysys(cmd)
+  setwd(wd)
 }
 
 #' Collect completed results files
