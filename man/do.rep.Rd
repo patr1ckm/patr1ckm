@@ -4,18 +4,18 @@
 \alias{do.rep}
 \title{Evaluate a function repeatedly over arbitrary arguments}
 \usage{
-do.rep(f, reps, verbose = 1, rep.cores = 1, ...)
+do.rep(f, ..., .reps, .verbose = 1, .rep.cores = 1, .eval = T)
 }
 \arguments{
 \item{f}{function to be evaluated}
+
+\item{...}{Arguments passed to f}
 
 \item{reps}{the number of times the function should be evaluated}
 
 \item{verbose}{If \code{1} (default), prints a \code{.} with every completed condition. 
 If \code{2}, prints the arguments corresponding to the completed condition. 
 If \code{3}, prints the arguments and results of the completed condition.}
-
-\item{...}{Arguments passed to f}
 }
 \description{
 This idiom is really useful to carry out simulations, which are essentially

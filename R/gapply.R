@@ -3,12 +3,12 @@
 #' gapply (grid apply) applies a function to a grid of it's parameters in parallel, optionally for a given number of replications
 #'
 #' @param f function to be evaluated. The function must return a (named) value or (named) vector of values.
+#' @param ... named arguments to \code{f} in the form \code{key=c(value1,value2, ...)} etc. 
 #' @param reps times the function should be evaluated
 #' @param mc.cores attempts to split function evaluations over given number of cores
 #' @param verbose If \code{1} (default), prints a \code{.} with every completed condition. 
 #' If \code{2}, prints the arguments corresponding to the completed condition. 
 #' If \code{3}, prints the arguments and results of the completed condition.
-#' @param ... named arguments to \code{f} in the form \code{key=c(value1,value2, ...)} etc. 
 #' A grid of parameter values will be generated from values given to each named argument, as \code{expand.grid(...)}
 #' @return Returns results as a \code{data.frame} in long form with the following columns:
 #' \item{\code{param.id}}{the row of \code{expand.grid(...)}}
@@ -25,16 +25,18 @@
 #' @importFrom tidyr gather
 #' @importFrom parallel mclapply
 #' @importFrom dplyr rbind_all
-gapply <- function(f, reps=1, mc.cores=1, verbose=1, ...){
+gapply <- function(f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T){
   param.grid <- expand.grid(...)
   param.ls <- split(param.grid, 1:nrow(param.grid))
   names(param.ls) <- NULL
   start <- proc.time()
-  res <- parallel::mclapply(param.ls, do.rep, f=f, reps=reps,mc.cores=mc.cores, verbose=verbose, rep.cores=1)
+  res <- parallel::mclapply(param.ls, do.rep, f=f, 
+                            .reps=.reps, mc.cores=.mc.cores, .verbose=.verbose, 
+                            .eval=.eval, .rep.cores=1)
   end <- proc.time()
   full <- do.call(rbind, res)
-  wide <- as.data.frame(cbind(param.id=rep(1:nrow(param.grid),each=reps),
-                              rep=rep(1:reps, times=nrow(param.grid)),
+  wide <- as.data.frame(cbind(param.id=rep(1:nrow(param.grid),each=.reps),
+                              rep=rep(1:.reps, times=nrow(param.grid)),
                               full))
   long <- tidyr::gather(wide,key,value,-(1:2))
   param.grid.id <- data.frame(param.grid, param.id=1:nrow(param.grid))
@@ -53,11 +55,11 @@ gapply <- function(f, reps=1, mc.cores=1, verbose=1, ...){
 #' repeated evaluations of a function over a grid of parameter values.
 #'
 #' @param f function to be evaluated
+#' @param ... Arguments passed to f
 #' @param reps the number of times the function should be evaluated
 #' @param verbose If \code{1} (default), prints a \code{.} with every completed condition. 
 #' If \code{2}, prints the arguments corresponding to the completed condition. 
 #' If \code{3}, prints the arguments and results of the completed condition.
-#' @param ... Arguments passed to f
 #' @export
 #' @importFrom parallel mclapply
 #' @importFrom dplyr rbind_all as.tbl
@@ -68,14 +70,19 @@ gapply <- function(f, reps=1, mc.cores=1, verbose=1, ...){
 #' names(conds.ls) <- NULL
 #' do.one <- function(a=1,b=2){a+b}
 #' lapply(conds.ls, do.cond, FUN=do.one, reps=5)
-do.rep <- function(f,reps,verbose=1,rep.cores=1,...){
-  if(verbose %in% c(2,3)){cat(paste(names(...),"=", ...),fill=T)}
-  res.l <- parallel::mclapply(1:reps,function(r, f, ...){ 
-    (do.call(f,...))}, f=f, ..., mc.cores=rep.cores)
+do.rep <- function(f,..., .reps,.verbose=1,.rep.cores=1, .eval=T){
+  if(.verbose %in% c(2,3)){cat(paste(names(...),"=", ...),fill=T)}
+  if(.eval){
+    res.l <- parallel::mclapply(1:(.reps),function(r, f, ...){ 
+      (try(do.call(f,...)))}, f=f, ..., mc.cores=.rep.cores)
+  } else {
+    nothing <- function(...){NA}
+    res.l <- do.call(nothing, ...) 
+  }
   res <- as.data.frame(do.call(rbind, res.l))
-  if(verbose==1){cat(".")}
-  if(verbose == 3) { print(head(res))}
-  if(verbose > 0) { cat("", fill=T) }
+  if(.verbose==1){cat(".")}
+  if(.verbose == 3) { print(head(res))}
+  if(.verbose > 0) { cat("", fill=T) }
   res # need this to get automatic reasonable naming of columns as default
 }
 

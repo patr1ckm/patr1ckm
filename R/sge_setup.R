@@ -3,10 +3,10 @@
 #' setup sge simulation
 #' @param dir directory name relative to the current working directory, ends in '/'
 #' @export
-setup <- function(object, dir="",  reps=1, chunks = 1, mc.cores=1, verbose=1, script.name="doone.R"){
+setup <- function(object, dir="",  .reps=1, .chunks = 1, .mc.cores=1, .verbose=1, .script.name="doone.R"){
   param.grid <- attr(object,"grid")
-  chunk.grid <- param.grid[rep(1:nrow(param.grid), each=chunks),]
-  chunk.grid$chunk <- rep(1:chunks, each=nrow(param.grid))
+  chunk.grid <- param.grid[rep(1:nrow(param.grid), each=.chunks),]
+  chunk.grid$chunk <- rep(1:.chunks, each=nrow(param.grid))
   f <- attr(object,"f")
   
   cmd <- paste0("mkdir -p ", dir, "results") 
@@ -14,12 +14,12 @@ setup <- function(object, dir="",  reps=1, chunks = 1, mc.cores=1, verbose=1, sc
   cmd <- paste0("mkdir -p ", dir, "SGE_Output")
   mysys(cmd)
   
-  write.submit(dir, script.name=script.name, mc.cores=mc.cores, tasks=nrow(param.grid))
+  write.submit(dir, script.name=.script.name, mc.cores=.mc.cores, tasks=nrow(param.grid))
 
   param.grid <- chunk.grid
   save(param.grid, file=paste0(dir, "param_grid.Rdata"))
   
-  write.do.one(f=f, dir=dir, reps=reps, mc.cores=mc.cores, verbose=verbose, script.name=script.name)
+  write.do.one(f=f, dir=dir, reps=.reps, mc.cores=.mc.cores, verbose=.verbose, script.name=.script.name)
 }
 
 
@@ -58,7 +58,7 @@ write.do.one <- function(f, dir, reps=1, mc.cores=1, verbose=1, script.name="doo
   load('param_grid.Rdata')
   params <- param.grid[cond,]
   rep.id <- (reps*(params$chunk-1)+1):(reps*params$chunk)
-  res <- do.rep(f,", reps, ", rep.cores=", mc.cores, ", verbose=", verbose, ", as.list(params))
+  res <- do.rep(f, as.list(params), .reps=reps, .rep.cores=", mc.cores, ", .verbose=", verbose," )
   dir <- paste0('results/cond_', cond,'/')
   system(paste0('mkdir -p ', dir))
   fn <- paste0(dir, 'cond_', cond,'_reps_',rep.id[1],'-', rep.id[reps],'.Rdata')

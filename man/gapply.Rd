@@ -4,10 +4,12 @@
 \alias{gapply}
 \title{Repeatedly apply a function over a grid of values in parallel}
 \usage{
-gapply(f, reps = 1, mc.cores = 1, verbose = 1, ...)
+gapply(f, ..., .reps = 1, .mc.cores = 1, .verbose = 1, .eval = T)
 }
 \arguments{
 \item{f}{function to be evaluated. The function must return a (named) value or (named) vector of values.}
+
+\item{...}{named arguments to \code{f} in the form \code{key=c(value1,value2, ...)} etc.}
 
 \item{reps}{times the function should be evaluated}
 
@@ -15,9 +17,7 @@ gapply(f, reps = 1, mc.cores = 1, verbose = 1, ...)
 
 \item{verbose}{If \code{1} (default), prints a \code{.} with every completed condition. 
 If \code{2}, prints the arguments corresponding to the completed condition. 
-If \code{3}, prints the arguments and results of the completed condition.}
-
-\item{...}{named arguments to \code{f} in the form \code{key=c(value1,value2, ...)} etc. 
+If \code{3}, prints the arguments and results of the completed condition.
 A grid of parameter values will be generated from values given to each named argument, as \code{expand.grid(...)}}
 }
 \value{
