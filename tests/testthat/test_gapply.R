@@ -67,3 +67,8 @@ expect_equal(dim(x), c(2,5))
 #do.one <- function(a=1,b=2){stop("this is an error")}
 #out <- gapply(do.one,reps=2, a=1:2,b=2,.verbose=0, mc.cores=2)
 
+
+do.one <- function(a=1,b=2){data.frame(sum=a+b,sub=a-b)}
+out <- do.rep(do.one,list(a=1,b=2), .reps=3, .verbose=0, .eval=F)
+out <- gapply(do.one,.reps=3, a=1,b=2,.verbose=0, .eval=F)
+

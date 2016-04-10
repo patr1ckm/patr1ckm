@@ -76,8 +76,8 @@ do.rep <- function(f,..., .reps,.verbose=1,.rep.cores=1, .eval=T){
     res.l <- parallel::mclapply(1:(.reps),function(r, f, ...){ 
       (try(do.call(f,...)))}, f=f, ..., mc.cores=.rep.cores)
   } else {
-    nothing <- function(...){NA}
-    res.l <- do.call(nothing, ...) 
+    nothing <- function(...){c(NA)}
+    res.l <- lapply(1:.reps, function(r, ...) do.call(nothing, ...), ...)
   }
   res <- as.data.frame(do.call(rbind, res.l))
   if(.verbose==1){cat(".")}
