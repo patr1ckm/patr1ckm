@@ -86,7 +86,7 @@ collect <- function(dir=""){
   load(paste0(dir, "param_grid.Rdata"))
   
   rdir <- paste0(dir, "results/")
-  conds.files <- paste0(rdir,list.files(rdir))
+  conds.files <- gtools::mixedsort(paste0(rdir,list.files(rdir)))
   res.l <- list()           # list of the results from each condition 
   err.l <- list()
 
