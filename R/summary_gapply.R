@@ -14,7 +14,7 @@ summary.gapply <- function(object, nreps=NULL){
   cat("Number of conditions: ", nrow(grid), fill=T)
   print(head(grid))
   cat("",fill=T)
-  if(!is.null(attr(out,"time"))){
+  if(!is.null(attr(object,"time"))){
     cat("Estimated time for x reps:", fill=T)
     cat("Reps \t Time", fill=T)
     o <- estimate.time(object, nreps=nreps)

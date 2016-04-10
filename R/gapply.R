@@ -32,7 +32,7 @@ gapply <- function(f, reps=1, mc.cores=1, verbose=1, ...){
   start <- proc.time()
   res <- parallel::mclapply(param.ls, do.rep, f=f, reps=reps,mc.cores=mc.cores, verbose=verbose, rep.cores=1)
   end <- proc.time()
-  full <- dplyr::rbind_all(res)
+  full <- do.call(rbind, res)
   wide <- as.data.frame(cbind(param.id=rep(1:nrow(param.grid),each=reps),
                               rep=rep(1:reps, times=nrow(param.grid)),
                               full))
