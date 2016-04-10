@@ -4,23 +4,28 @@
 #'
 #' @param f function to be evaluated. The function must return a (named) value or (named) vector of values.
 #' @param ... named arguments to \code{f} in the form \code{key=c(value1,value2, ...)} etc. 
-#' @param reps times the function should be evaluated
-#' @param mc.cores attempts to split function evaluations over given number of cores
-#' @param verbose If \code{1} (default), prints a \code{.} with every completed condition. 
+#' A grid of parameter values will be generated from values given to each named argument, as \code{expand.grid(...)}
+#' @param .reps times the function should be evaluated
+#' @param .mc.cores attempts to split function evaluations over given number of cores
+#' @param .verbose If \code{1} (default), prints a \code{.} with every completed condition. 
 #' If \code{2}, prints the arguments corresponding to the completed condition. 
 #' If \code{3}, prints the arguments and results of the completed condition.
-#' A grid of parameter values will be generated from values given to each named argument, as \code{expand.grid(...)}
-#' @return Returns results as a \code{data.frame} in long form with the following columns:
-#' \item{\code{param.id}}{the row of \code{expand.grid(...)}}
+#' @param .eval If \code{TRUE} (default), evaluates \code{f}. If \code{FALSE}, does not evaluate \code{f} and returns \code{NA} for \code{value}.
+#' @return Returns non-error results as a \code{data.frame} in long form with the following columns:
 #' \item{...}{Columns corresponding to grid of parameters given in \code{expand.grid(...)}}
-#' \item{\code{rep}}{giving the replication number}
-#' \item{\code{key}}{giving the name(s) of the return value(s) of \code{f}}
-#' \item{\code{value}}{gives the value}
-#' @details If the values returned by \code{f} are not named, they will be named according to the rules of \code{as.data.frame}, typically \code{V1, V2, ...}. 
-#' Note that the function application to each combination of meta-parameters (not replications) are distributed in parallel, will not work in Windows. 
+#' \item{\code{rep}}{the replication number}
+#' \item{\code{key}}{the name(s) of the return value(s) of \code{f}}
+#' \item{\code{value}}{the value of \code{f} at a set of parameters, if \code{.eval = FALSE}, returns \code{NA}}
+#' Errors are captured using \code{try}, converted to character, and available using \code{attr(object, "err")}
+#' @details 
+#' The attributes of the object include \code{grid} (the grid of parameter values), \code{time} (elapsed time), and \code{err} (list of errors).
+#' 
+#' If the values returned by \code{f} are not named, they will be named according to the rules of \code{as.data.frame}, typically \code{V1, V2, ...}. 
+#' 
+#' The function application to each combination of meta-parameters (not replications) are distributed in parallel via \code{mclapply} and will not work in Windows. 
 #' @examples
 #' do.one <- function(a=1,b=2){c(sum=a+b,sub=a-b)}
-#' gapply(do.one,reps=5, a=1:4,b=2:3)
+#' gapply(do.one, a=1:4,b=2:3, .reps=5)
 #' @export
 #' @importFrom tidyr gather
 #' @importFrom parallel mclapply
@@ -30,23 +35,29 @@ gapply <- function(f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T){
   param.ls <- split(param.grid, 1:nrow(param.grid))
   names(param.ls) <- NULL
   start <- proc.time()
-  res <- parallel::mclapply(param.ls, do.rep, f=f, 
+  res.l <- parallel::mclapply(param.ls, do.rep, f=f, 
                             .reps=.reps, mc.cores=.mc.cores, .verbose=.verbose, 
                             .eval=.eval, .rep.cores=1)
   end <- proc.time()
-  full <- do.call(rbind, res)
-  wide <- as.data.frame(cbind(param.id=rep(1:nrow(param.grid),each=.reps),
-                              rep=rep(1:.reps, times=nrow(param.grid)),
-                              full))
-  long <- tidyr::gather(wide,key,value,-(1:2))
-  param.grid.id <- data.frame(param.grid, param.id=1:nrow(param.grid))
-  long.param <- merge(param.grid.id,long)
-  class(long.param) <- c("gapply", class(long.param))
-  attr(long.param, "time") <- end-start
-  attr(long.param, "arg.names") <- colnames(param.grid)
-  attr(long.param, "f") <- f
-  attr(long.param, "grid") <- param.grid
-  return(long.param)
+  res.l <- unlist(res.l, recursive=FALSE) # should be conds*reps long
+  rep.grid <- param.grid[rep(1:nrow(param.grid),each=.reps), , drop=F]
+  rep.grid$rep  <- rep(1:.reps, times=nrow(param.grid))
+  
+  err.id <- unlist(lapply(res.l, is.error))
+  err.list <- res.l[err.id]
+  value <- as.data.frame(do.call(rbind, res.l[!err.id])) # automatic naming of unnamed returns to V1,V2, etc
+  
+  wide <- cbind(rep.grid[!err.id, ], value)
+  
+  long <- tidyr::gather(wide,key,value,-(1:3))
+  
+  class(long) <- c("gapply", class(long))
+  attr(long, "time") <- end-start
+  attr(long, "arg.names") <- colnames(param.grid)
+  attr(long, "f") <- f
+  attr(long, "grid") <- param.grid
+  attr(long, "err") <- lapply(err.list,as.character)
+  return(long)
 }
 
 #' Evaluate a function repeatedly over arbitrary arguments
@@ -56,20 +67,16 @@ gapply <- function(f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T){
 #'
 #' @param f function to be evaluated
 #' @param ... Arguments passed to f
-#' @param reps the number of times the function should be evaluated
-#' @param verbose If \code{1} (default), prints a \code{.} with every completed condition. 
+#' @param .reps the number of times the function should be evaluated
+#' @param .rep.cores Apply repeates in parallel using mclapply
+#' @param .eval If \code{TRUE} (default), evaluates \code{f}. If \code{FALSE}, does not evaluate \code{f}.
+#' @param .verbose If \code{1} (default), prints a \code{.} with every completed condition. 
 #' If \code{2}, prints the arguments corresponding to the completed condition. 
 #' If \code{3}, prints the arguments and results of the completed condition.
 #' @export
 #' @importFrom parallel mclapply
 #' @importFrom dplyr rbind_all as.tbl
-#' @details If verbose = 
-#' @examples
-#' conds <- expand.grid(a=1:3,b=4:5)
-#' conds.ls <- split(conds, 1:nrow(conds))
-#' names(conds.ls) <- NULL
-#' do.one <- function(a=1,b=2){a+b}
-#' lapply(conds.ls, do.cond, FUN=do.one, reps=5)
+
 do.rep <- function(f,..., .reps,.verbose=1,.rep.cores=1, .eval=T){
   if(.verbose %in% c(2,3) & .eval){cat(paste(names(...),"=", ...),fill=T)}
   if(.eval){
@@ -79,11 +86,13 @@ do.rep <- function(f,..., .reps,.verbose=1,.rep.cores=1, .eval=T){
     nothing <- function(...){c(NA)}
     res.l <- lapply(1:.reps, function(r, ...) do.call(nothing, ...), ...)
   }
-  res <- as.data.frame(do.call(rbind, res.l))
+  #res <- as.data.frame(do.call(rbind, res.l))
   if(.verbose==1 & .eval){cat(".")}
-  if(.verbose == 3 & .eval) { print(head(res))}
-  if(.verbose > 0 & .eval) { cat("", fill=T) }
-  res 
+  if(.verbose == 3 & .eval) { print(head(res.l))}
+  if(.verbose > 1 & .eval) { cat("", fill=T) }
+  return(res.l)
 }
 
+is.error <- function(o){is(o, "try-error")}
+not.error <- function(o){!is(o, "try-error")}
 

@@ -82,18 +82,17 @@ submit <- function(dir=""){
 #' @export
 collect <- function(dir=""){
   load(paste0(dir, "param_grid.Rdata"))
+  
   rdir <- paste0(dir, "results/")
   conds.files <- paste0(rdir,list.files(rdir))
-  res.list <- list()           # list of the results from each condition 
-  perc.complete <- list()  # for each condition, what is the percentage of reps complete?
-  
-  err.list <- list()
+  res.l <- list()           # list of the results from each condition 
+  err.l <- list()
 
-  maybereps <- function(fn){
+  na.reps <- function(fn){
     if(file.exists(fn)){
       load(fn)
       return(res)
-    }
+    } else return(list(NA))
   }
   
   for(i in 1:length(conds.files)){
@@ -101,28 +100,33 @@ collect <- function(dir=""){
     reps.list <- list()
     for(j in 1:length(rep.files)){
       fn <- paste0(conds.files[i], "/", rep.files[j])
-      reps.list[[j]] <- maybereps(fn)
+      reps.list[[j]] <- na.reps(fn)
     }
-    is.err <- unlist(lapply(reps.list, function(obj){is(obj, "try-error")}))
-    #perc.complete[[i]] <- mean(is.err)
-    res.list[[i]] <- do.call(rbind, reps.list[!is.err])
-    err.list[[i]] <- do.call(rbind, reps.list[is.err])
+    res.l[i] <- reps.list
   }
-  res <- do.call(rbind, res.list)
-  reps <- nrow(reps.list[[1]])
-  wide <- as.data.frame(cbind(param.id=rep(1:nrow(param.grid),each=reps),
-                              rep=rep(1:reps, times=nrow(param.grid)),
-                              res))
-  long <- tidyr::gather(wide,key,value,-(1:2))
-  param.grid.id <- data.frame(param.grid, param.id=1:nrow(param.grid))
-  long.param <- merge(param.grid.id,long)
-  class(long.param) <- c("gapply", class(long.param))
+  .reps <- length(reps.list[[1]]) # Since this is from do.rep, will always be of length reps
+  res.l <- unlist(res.l, recursive=FALSE) # should be conds*reps long
   
-  attr(long.param, "arg.names") <- colnames(param.grid)[-ncol(param.grid)]
-  attr(long.param, "grid") <- param.grid
-  #attr(long.param, "perc.complete") <- unlist(perc.complete)
-  attr(long.param, "err") <- err.list
-  return(long.param)
+  param.grid$chunk <- NULL
+  rep.grid <- param.grid[rep(1:nrow(param.grid),each=.reps), , drop=F]
+  rep.grid$rep  <- rep(1:.reps, times=nrow(param.grid))
+  
+  err.id <- unlist(lapply(res.l, is.error))
+  err.list <- res.l[err.id]
+  value <- as.data.frame(do.call(rbind, res.l[!err.id])) # automatic naming of unnamed returns to V1,V2, etc
+  
+  wide <- cbind(rep.grid[!err.id, ], value)
+  
+  long <- tidyr::gather(wide,key,value,-(1:3))
+  
+  class(long) <- c("gapply", class(long))
+  attr(long, "time") <- NULL
+  attr(long, "arg.names") <- colnames(param.grid)
+  attr(long, "f") <- f
+  attr(long, "grid") <- param.grid
+  attr(long, "err") <- lapply(err.list,as.character)
+  
+  return(long)
 }
 
 #' Cleans results

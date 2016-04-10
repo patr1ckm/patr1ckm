@@ -11,24 +11,18 @@ do.rep(f, ..., .reps, .verbose = 1, .rep.cores = 1, .eval = T)
 
 \item{...}{Arguments passed to f}
 
-\item{reps}{the number of times the function should be evaluated}
+\item{.reps}{the number of times the function should be evaluated}
 
-\item{verbose}{If \code{1} (default), prints a \code{.} with every completed condition. 
+\item{.verbose}{If \code{1} (default), prints a \code{.} with every completed condition. 
 If \code{2}, prints the arguments corresponding to the completed condition. 
 If \code{3}, prints the arguments and results of the completed condition.}
+
+\item{.rep.cores}{Apply repeates in parallel using mclapply}
+
+\item{.eval}{If \code{TRUE} (default), evaluates \code{f}. If \code{FALSE}, does not evaluate \code{f}.}
 }
 \description{
 This idiom is really useful to carry out simulations, which are essentially
 repeated evaluations of a function over a grid of parameter values.
-}
-\details{
-If verbose =
-}
-\examples{
-conds <- expand.grid(a=1:3,b=4:5)
-conds.ls <- split(conds, 1:nrow(conds))
-names(conds.ls) <- NULL
-do.one <- function(a=1,b=2){a+b}
-lapply(conds.ls, do.cond, FUN=do.one, reps=5)
 }
 
