@@ -72,7 +72,7 @@ write.do.one <- function(f, dir, reps=1, mc.cores=1, verbose=1, script.name="doo
 submit <- function(dir=""){
   wd <- getwd()
   setwd(dir)
-  cmd <- paste0("qsub ", dir, "submit")
+  cmd <- paste0("qsub submit")
   mysys(cmd)
   setwd(wd)
 }
@@ -137,7 +137,7 @@ clean <- function(dir){
 #' @export
 sge <- function(dir="tmp/"){
   f <- function(x,y){Sys.sleep(.5); x}
-  out <- gapply(f, x=1:3, y=1:2)
+  out <- gapply(f, x=1:3, y=1:2, .eval=F)
   setup(out, dir)
   submit(dir)
 }
