@@ -49,7 +49,7 @@ Rscript ", script.name, " $SGE_TASK_ID")
 }
 
 write.do.one <- function(f, dir, reps=1, mc.cores=1, verbose=1, script.name="doone.R"){
-  fstr <- paste0("f <- ", paste0(deparse(eval(f), control="all"),collapse=""))
+  fstr <- paste0("f <- ", paste0(deparse(eval(f), control="all"),collapse="\n"))
   temp <- paste0(fstr,"
   library(patr1ckm)
   args <- as.numeric(commandArgs(trailingOnly=TRUE))
