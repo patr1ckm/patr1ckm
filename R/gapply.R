@@ -71,7 +71,7 @@ gapply <- function(f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T){
 #' do.one <- function(a=1,b=2){a+b}
 #' lapply(conds.ls, do.cond, FUN=do.one, reps=5)
 do.rep <- function(f,..., .reps,.verbose=1,.rep.cores=1, .eval=T){
-  if(.verbose %in% c(2,3)){cat(paste(names(...),"=", ...),fill=T)}
+  if(.verbose %in% c(2,3) & .eval){cat(paste(names(...),"=", ...),fill=T)}
   if(.eval){
     res.l <- parallel::mclapply(1:(.reps),function(r, f, ...){ 
       (try(do.call(f,...)))}, f=f, ..., mc.cores=.rep.cores)
@@ -80,10 +80,10 @@ do.rep <- function(f,..., .reps,.verbose=1,.rep.cores=1, .eval=T){
     res.l <- lapply(1:.reps, function(r, ...) do.call(nothing, ...), ...)
   }
   res <- as.data.frame(do.call(rbind, res.l))
-  if(.verbose==1){cat(".")}
-  if(.verbose == 3) { print(head(res))}
-  if(.verbose > 0) { cat("", fill=T) }
-  res # need this to get automatic reasonable naming of columns as default
+  if(.verbose==1 & .eval){cat(".")}
+  if(.verbose == 3 & .eval) { print(head(res))}
+  if(.verbose > 0 & .eval) { cat("", fill=T) }
+  res 
 }
 
 

@@ -49,7 +49,7 @@ Rscript ", script.name, " $SGE_TASK_ID")
 }
 
 write.do.one <- function(f, dir, reps=1, mc.cores=1, verbose=1, script.name="doone.R"){
-  fstr <- paste0("f <- ", paste0(deparse(eval(f)),collapse=""))
+  fstr <- paste0("f <- ", paste0(deparse(eval(f), control="all"),collapse=""))
   temp <- paste0(fstr,"
   library(patr1ckm)
   args <- as.numeric(commandArgs(trailingOnly=TRUE))
@@ -136,7 +136,10 @@ clean <- function(dir){
 #' 
 #' @export
 sge <- function(dir="tmp/"){
-  f <- function(x,y){Sys.sleep(.5); x}
+  f <- function(x,y){
+    Sys.sleep(.5)
+    x
+  }
   out <- gapply(f, x=1:3, y=1:2, .eval=F)
   setup(out, dir)
   submit(dir)
