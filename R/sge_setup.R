@@ -5,7 +5,7 @@
 #' @export
 setup <- function(object, dir="",  .reps=1, .chunks = 1, .mc.cores=1, .verbose=1, .script.name="doone.R"){
   param.grid <- attr(object,"grid")
-  chunk.grid <- param.grid[rep(1:nrow(param.grid), each=.chunks),]
+  chunk.grid <- param.grid[rep(1:nrow(param.grid), each=.chunks),drop=F]
   chunk.grid$chunk <- rep(1:.chunks, each=nrow(param.grid))
   f <- attr(object,"f")
   
