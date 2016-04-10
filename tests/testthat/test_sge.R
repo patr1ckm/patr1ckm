@@ -1,4 +1,7 @@
-do.one <- function(a=1,b=2,...){c(a+b,a-b)}
+do.one <- function(a=1,b=2){
+  if(a==1) stop("asdf")
+  a
+}
 out <- gapply(do.one,a=1:2,b=2, .reps=2, .verbose=0)
 
 system("mkdir -p tests/tmp")

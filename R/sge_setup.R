@@ -59,11 +59,11 @@ write.do.one <- function(f, dir, reps=1, mc.cores=1, verbose=1, script.name="doo
   params <- param.grid[cond,]
   rep.id <- (reps*(params$chunk-1)+1):(reps*params$chunk)
   params$chunk <- NULL # because f doesn't take chunk usually
-  res <- do.rep(f, as.list(params), .reps=reps, .rep.cores=", mc.cores, ", .verbose=", verbose," )
+  res.l <- do.rep(f, as.list(params), .reps=reps, .rep.cores=", mc.cores, ", .verbose=", verbose," )
   dir <- paste0('results/cond_', cond,'/')
   system(paste0('mkdir -p ', dir))
   fn <- paste0(dir, 'cond_', cond,'_reps_',rep.id[1],'-', rep.id[reps],'.Rdata')
-  save(res, file=fn)")
+  save(res.l, file=fn)")
   
   cat(temp, file=paste0(dir, script.name))
 }
@@ -91,7 +91,7 @@ collect <- function(dir=""){
   na.reps <- function(fn){
     if(file.exists(fn)){
       load(fn)
-      return(res)
+      return(res.l)
     } else return(list(NA))
   }
   
