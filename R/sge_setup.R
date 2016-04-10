@@ -80,6 +80,8 @@ submit <- function(dir=""){
 
 #' Collect completed results files
 #' @export
+#' @importFrom gtools mixedsort
+#' @importFrom tidyr gather
 collect <- function(dir=""){
   load(paste0(dir, "param_grid.Rdata"))
   
@@ -96,7 +98,7 @@ collect <- function(dir=""){
   }
   
   for(i in 1:length(conds.files)){
-    rep.files <- list.files(conds.files[[i]])
+    rep.files <- gtools::mixedsort(list.files(conds.files[[i]]))
     reps.list <- list()
     for(j in 1:length(rep.files)){
       fn <- paste0(conds.files[i], "/", rep.files[j])
