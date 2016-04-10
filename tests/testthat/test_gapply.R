@@ -54,7 +54,8 @@ out <- gapply(do.one,reps=2,verbose=1, a=1,b=1)
 expect_is(attr(out,"time"), "proc_time")
 attributes(out)
 
-
+do.one <- function(a=1,b=2){data.frame(sum=a+b,sub=a-b)}
+out <- gapply(do.one,reps=3, a=1,b=2,verbose=0)
 x <- capture.output(o <- summary(out))
 expect_output(summary(out), "Source:")
 expect_output(summary(out), "Estimated time")
@@ -63,6 +64,6 @@ x <- summary(out)
 expect_is(x,"tbl")
 expect_equal(dim(x), c(2,5))
 
-do.one <- function(a=1,b=2){stop("this is an error")}
-out <- gapply(do.one,reps=2, a=1:2,b=2,verbose=0, mc.cores=2)
+#do.one <- function(a=1,b=2){stop("this is an error")}
+#out <- gapply(do.one,reps=2, a=1:2,b=2,verbose=0, mc.cores=2)
 

@@ -59,7 +59,7 @@ write.do.one <- function(f, dir, reps=1, mc.cores=1, verbose=1, script.name="doo
   rep.id <- (reps*(params$chunk-1)+1):(reps*params$chunk)
   res <- do.rep(f,", reps, ", rep.cores=", mc.cores, ", verbose=", verbose, ", as.list(params))
   dir <- paste0('results/cond_', cond,'/')
-  system(paste0('mkdir -p', dir))
+  system(paste0('mkdir -p ', dir))
   fn <- paste0(dir, 'cond_', cond,'_reps_',rep.id[1],'-', rep.id[reps],'.Rdata')
   save(res, file=fn)")
   
@@ -79,15 +79,27 @@ collect <- function(dir=""){
   load(paste0(dir, "param_grid.Rdata"))
   rdir <- paste0(dir, "results/")
   conds.files <- paste0(rdir,list.files(rdir))
-  res.list <- list()
+  res.list <- list()           # list of the results from each condition 
+  perc.complete <- list()  # for each condition, what is the percentage of reps complete? 
+
+  getreps <- function(fn){
+    stopifnot(file.exists(fn))
+    load(fn)
+    return(res)
+  }
+  
   for(i in 1:length(conds.files)){
     rep.files <- list.files(conds.files[[i]])
     reps.list <- list()
     for(j in 1:length(rep.files)){
-      load(paste0(conds.files[i], "/", rep.files[j]))
-      reps.list[[j]] <- res
+      fn <- paste0(conds.files[i], "/", rep.files[j])
+      reps.list[[j]] <- try(getreps(fn))
     }
-    res.list[[i]] <- do.call(rbind, reps.list)
+    is.err <- unlist(lapply(reps.list, function(obj){is(obj, "try-error")}))
+    perc.complete[[i]] <- mean(is.err)
+    if(mean(is.err) < 1){
+      res.list[[i]] <- do.call(rbind, reps.list[!is.err])
+    }
   }
   res <- do.call(rbind, res.list)
   reps <- nrow(reps.list[[1]])
@@ -98,10 +110,10 @@ collect <- function(dir=""){
   param.grid.id <- data.frame(param.grid, param.id=1:nrow(param.grid))
   long.param <- merge(param.grid.id,long)
   class(long.param) <- c("gapply", class(long.param))
-  #attr(long.param, "time") <- end-start
+  
   attr(long.param, "arg.names") <- colnames(param.grid)[-ncol(param.grid)]
-  #attr(long.param, "f") <- f
   attr(long.param, "grid") <- param.grid
+  attr(long.param, "perc.complete") <- unlist(perc.complete)
   return(long.param)
 }
 
@@ -119,7 +131,7 @@ clean <- function(dir){
 #' sge
 #' 
 #' @export
-sge <- function(dir){
+sge <- function(dir="tmp/"){
   f <- function(x,y){Sys.sleep(.5); x}
   out <- gapply(f, x=1:3, y=1:2)
   setup(out, dir)

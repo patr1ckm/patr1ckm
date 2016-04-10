@@ -24,6 +24,7 @@
 #' @export
 #' @importFrom tidyr gather
 #' @importFrom parallel mclapply
+#' @importFrom dplyr rbind_all
 gapply <- function(f, reps=1, mc.cores=1, verbose=1, ...){
   param.grid <- expand.grid(...)
   param.ls <- split(param.grid, 1:nrow(param.grid))
@@ -31,9 +32,10 @@ gapply <- function(f, reps=1, mc.cores=1, verbose=1, ...){
   start <- proc.time()
   res <- parallel::mclapply(param.ls, do.rep, f=f, reps=reps,mc.cores=mc.cores, verbose=verbose, rep.cores=1)
   end <- proc.time()
+  full <- dplyr::rbind_all(res)
   wide <- as.data.frame(cbind(param.id=rep(1:nrow(param.grid),each=reps),
                               rep=rep(1:reps, times=nrow(param.grid)),
-                              do.call(rbind,res)))
+                              full))
   long <- tidyr::gather(wide,key,value,-(1:2))
   param.grid.id <- data.frame(param.grid, param.id=1:nrow(param.grid))
   long.param <- merge(param.grid.id,long)
@@ -57,6 +59,8 @@ gapply <- function(f, reps=1, mc.cores=1, verbose=1, ...){
 #' If \code{3}, prints the arguments and results of the completed condition.
 #' @param ... Arguments passed to f
 #' @export
+#' @importFrom parallel mclapply
+#' @importFrom dplyr rbind_all as.tbl
 #' @details If verbose = 
 #' @examples
 #' conds <- expand.grid(a=1:3,b=4:5)
@@ -66,90 +70,13 @@ gapply <- function(f, reps=1, mc.cores=1, verbose=1, ...){
 #' lapply(conds.ls, do.cond, FUN=do.one, reps=5)
 do.rep <- function(f,reps,verbose=1,rep.cores=1,...){
   if(verbose %in% c(2,3)){cat(paste(names(...),"=", ...),fill=T)}
-  res.l <- mclapply(1:reps,function(r, f, ...){ try(do.call(f,...))}, f=f, ..., mc.cores=rep.cores)
-  res <- do.call(rbind, res.l)
+  res.l <- parallel::mclapply(1:reps,function(r, f, ...){ 
+    (do.call(f,...))}, f=f, ..., mc.cores=rep.cores)
+  res <- as.data.frame(do.call(rbind, res.l))
   if(verbose==1){cat(".")}
   if(verbose == 3) { print(head(res))}
-  cat("", fill=T)
-  as.data.frame(res) # need this to get automatic reasonable naming of columns as default
+  if(verbose > 0) { cat("", fill=T) }
+  res # need this to get automatic reasonable naming of columns as default
 }
 
-#' \code{summary} method for class \code{"gapply"}
-#' @param object gapply result object
-#' @param nreps number of reps to scale to
-#' @return Prints the means over all reps for each condition and returns it invisibly. Also prints the estimated time to scale up to x reps
-#' @importFrom dplyr group_by_ summarize
-#' @importFrom tidyr %>%
-#' @export
-summary.gapply <- function(object, nreps=NULL){
-  ns <- c(attr(object, 'arg.names'),"key")
-  means <- object %>% dplyr::group_by_(.dots=ns) %>% dplyr::summarize(mean(value), sd(value))
-  print(means)
-  cat("",fill=T)
-  grid <- attr(object, "grid")
-  cat("Number of conditions: ", nrow(grid), fill=T)
-  print(head(grid))
-  cat("",fill=T)
-  if(!is.null(attr(out,"time"))){
-    cat("Estimated time for x reps:", fill=T)
-    cat("Reps \t Time", fill=T)
-    o <- estimate.time(object, nreps=nreps)
-    for(i in 1:nrow(o)){ cat(paste0(o[i,],"\t"),fill=T)}
-  }
-  invisible(means)
-}
 
-#' Estimate time for a given number of reps
-#' @param object gapply object
-#' @param nreps number of reps to scale to
-#' @export
-estimate.time <- function(object, nreps=NULL){
-  if(is.null(nreps)){ nreps <- c(50,100,500,1000,5000,10000)}
-  max.reps <- max(object$rep)
-  time.per.rep <- attr(object,"time")[3]/max.reps
-  times <- lapply(time.per.rep*nreps,FUN=nicetime)
-  o <- cbind(reps=nreps,times=times)
-  return(o)  
-}
-
-## From package astro
-nicetime <- function (seconds) {
-  lapseconds = round(seconds)
-  seconds = lapseconds%%60
-  minutes = ((lapseconds - seconds)/60)%%60
-  hours = ((lapseconds - minutes * 60 - seconds)/3600)%%24
-  days = ((lapseconds - hours * 3600 - minutes * 60 - seconds)/86400)
-  lapline = {
-  }
-  if (days != 0) {
-    if (days == 1) {
-      lapline = paste(days, "d, ", sep = "")
-    }
-    else {
-      lapline = paste(days, "d, ", sep = "")
-    }
-  }
-  if (hours != 0 | days != 0) {
-    if (hours == 1) {
-      lapline = paste(lapline, hours, "h, ", sep = "")
-    }
-    else {
-      lapline = paste(lapline, hours, "h, ", sep = "")
-    }
-  }
-  if (minutes != 0 | hours != 0 | days != 0) {
-    if (minutes == 1) {
-      lapline = paste(lapline, minutes, "m, ", sep = "")
-    }
-    else {
-      lapline = paste(lapline, minutes, "m, ", sep = "")
-    }
-  }
-  if (seconds == 1) {
-    lapline = paste(lapline, seconds, "s", sep = "")
-  }
-  else {
-    lapline = paste(lapline, seconds, "s", sep = "")
-  }
-  return(lapline)
-}
