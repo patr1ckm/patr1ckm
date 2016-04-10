@@ -142,9 +142,10 @@ clean <- function(dir){
 sge <- function(dir="tmp/"){
   f <- function(x,y){
     Sys.sleep(.5)
+    stopifnot(x < 5)
     x
   }
-  out <- gapply(f, x=1:3, y=1:2, .eval=F)
+  out <- gapply(f, x=3:8, y=1:2, .eval=F)
   setup(out, dir)
   submit(dir)
 }
