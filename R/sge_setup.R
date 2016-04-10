@@ -85,12 +85,15 @@ collect <- function(dir=""){
   rdir <- paste0(dir, "results/")
   conds.files <- paste0(rdir,list.files(rdir))
   res.list <- list()           # list of the results from each condition 
-  perc.complete <- list()  # for each condition, what is the percentage of reps complete? 
+  perc.complete <- list()  # for each condition, what is the percentage of reps complete?
+  
+  err.list <- list()
 
-  getreps <- function(fn){
-    stopifnot(file.exists(fn))
-    load(fn)
-    return(res)
+  maybereps <- function(fn){
+    if(file.exists(fn)){
+      load(fn)
+      return(res)
+    }
   }
   
   for(i in 1:length(conds.files)){
@@ -98,13 +101,12 @@ collect <- function(dir=""){
     reps.list <- list()
     for(j in 1:length(rep.files)){
       fn <- paste0(conds.files[i], "/", rep.files[j])
-      reps.list[[j]] <- try(getreps(fn))
+      reps.list[[j]] <- maybereps(fn)
     }
     is.err <- unlist(lapply(reps.list, function(obj){is(obj, "try-error")}))
-    perc.complete[[i]] <- mean(is.err)
-    if(mean(is.err) < 1){
-      res.list[[i]] <- do.call(rbind, reps.list[!is.err])
-    }
+    #perc.complete[[i]] <- mean(is.err)
+    res.list[[i]] <- do.call(rbind, reps.list[!is.err])
+    err.list[[i]] <- do.call(rbind, reps.list[is.err])
   }
   res <- do.call(rbind, res.list)
   reps <- nrow(reps.list[[1]])
@@ -118,7 +120,8 @@ collect <- function(dir=""){
   
   attr(long.param, "arg.names") <- colnames(param.grid)[-ncol(param.grid)]
   attr(long.param, "grid") <- param.grid
-  attr(long.param, "perc.complete") <- unlist(perc.complete)
+  #attr(long.param, "perc.complete") <- unlist(perc.complete)
+  attr(long.param, "err") <- err.list
   return(long.param)
 }
 
