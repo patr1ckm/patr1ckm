@@ -122,7 +122,7 @@ collect <- function(dir=""){
   class(long) <- c("gapply", class(long))
   attr(long, "time") <- NULL
   attr(long, "arg.names") <- colnames(param.grid)
-  attr(long, "f") <- f
+  attr(long, "f") <- NULL
   attr(long, "grid") <- param.grid
   attr(long, "err") <- lapply(err.list,as.character)
   
