@@ -88,7 +88,6 @@ collect <- function(dir=""){
   rdir <- paste0(dir, "results/")
   conds.files <- gtools::mixedsort(paste0(rdir,list.files(rdir)))
   res.l <- list()           # list of the results from each condition 
-  err.l <- list()
 
   na.reps <- function(fn){
     if(file.exists(fn)){
@@ -114,7 +113,9 @@ collect <- function(dir=""){
   rep.grid$rep  <- rep(1:.reps, times=nrow(param.grid))
   
   err.id <- unlist(lapply(res.l, is.error))
+  err.param <- rep.grid[which(err.id),]
   err.list <- res.l[err.id]
+  names(err.list) <- err.param
   value <- as.data.frame(do.call(rbind, res.l[!err.id])) # automatic naming of unnamed returns to V1,V2, etc
   
   wide <- cbind(rep.grid[!err.id, ], value)

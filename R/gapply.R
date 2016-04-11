@@ -45,6 +45,8 @@ gapply <- function(f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T){
   
   err.id <- unlist(lapply(res.l, is.error))
   err.list <- res.l[err.id]
+  names(err.list) <- which(err.id)
+  paste0(paste0(names(x[1,]), " = ", as.list(x[1,])),collapse=" , ")
   value <- as.data.frame(do.call(rbind, res.l[!err.id])) # automatic naming of unnamed returns to V1,V2, etc
   
   wide <- cbind(rep.grid[!err.id, ], value)
@@ -95,4 +97,4 @@ do.rep <- function(f,..., .reps,.verbose=1,.rep.cores=1, .eval=T){
 
 is.error <- function(o){is(o, "try-error")}
 not.error <- function(o){!is(o, "try-error")}
-
+toargs <- function(x){ paste0(paste0(names(x), "=", as.list(x)),collapse=", ") }

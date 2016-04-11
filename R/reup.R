@@ -25,4 +25,19 @@ push <- function(m, f=NULL){
   system(cmd)
 }
 
+#' add and commit changes
+#' @param m commit message
+#' @export
+commit <- function(m, f=NULL){
+  if(!is.null(f)){ 
+    cmd <- paste0("git add ", f)
+    system(cmd)
+  }
+  cmd <- "git add -u"
+  system(cmd)
+  cmd <- paste0("git commit -m '", m, "'")
+  system(cmd)
+}
+
+
 ## testing

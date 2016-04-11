@@ -22,7 +22,7 @@ do.one <- function(a=1,b=2){
 }
 r <- do.rep(do.one,list(a=1,b=2), .reps=2)
 expect_is(r[[1]], "try-error")
-out <- gapply(do.one, a=1:2, b=2, .reps=2, .verbose=0)
+out <- gapply(do.one, a=c(2,1), b=2, .reps=2, .verbose=0)
 expect_is(attr(out, "err")[[1]], "character")
 
 
