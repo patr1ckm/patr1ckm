@@ -9,7 +9,7 @@ system("rm -rf tests/tmp/*")
 
 setup(out, dir="tests/tmp/", .reps = 6, .chunks = 3)
 
-## This is a bad hack to get the tests to run from this directory
+## This is a hack to get the tests to run from this directory
 setwd("tests/tmp")
 system("Rscript doone.R 1 ")
 system("Rscript doone.R 2 ")

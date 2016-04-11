@@ -4,7 +4,7 @@
 #' @param dir directory name relative to the current working directory, ends in '/'
 #' @export
 setup <- function(object, dir="",  .reps=1, .chunks = 1, .mc.cores=1, .verbose=1, .script.name="doone.R"){
-  param.grid <- attr(object,"grid")
+  param.grid <- attr(object,"param.grid")
   chunk.grid <- param.grid[rep(1:nrow(param.grid), each=.chunks),,drop=F]
   chunk.grid$chunk <- rep(1:.chunks, each=nrow(param.grid))
   f <- attr(object,"f")
@@ -115,7 +115,8 @@ collect <- function(dir=""){
   err.id <- unlist(lapply(res.l, is.error))
   err.param <- rep.grid[which(err.id),]
   err.list <- res.l[err.id]
-  names(err.list) <- err.param
+  names(err.list) <- which(err.id)
+  
   value <- as.data.frame(do.call(rbind, res.l[!err.id])) # automatic naming of unnamed returns to V1,V2, etc
   
   wide <- cbind(rep.grid[!err.id, ], value)
@@ -128,6 +129,7 @@ collect <- function(dir=""){
   attr(long, "f") <- NULL
   attr(long, "grid") <- param.grid
   attr(long, "err") <- lapply(err.list,as.character)
+  attr(long, ".reps", .reps)
   
   return(long)
 }
