@@ -4,12 +4,16 @@
 \alias{summary.gapply}
 \title{\code{summary} method for class \code{"gapply"}}
 \usage{
-\method{summary}{gapply}(object, nreps = NULL)
+\method{summary}{gapply}(object, .reps = NULL, .fun = mean, .key = NULL)
 }
 \arguments{
 \item{object}{gapply result object}
 
-\item{nreps}{number of reps to scale to}
+\item{.reps}{number of reps to scale to}
+
+\item{.fun}{function to aggregate over replications}
+
+\item{.key}{A string of the character vector to filter on}
 }
 \value{
 Prints the means over all reps for each condition and returns it invisibly. Also prints the estimated time to scale up to x reps

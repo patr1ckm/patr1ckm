@@ -51,7 +51,7 @@ gapply <- function(f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T){
   
   wide <- cbind(rep.grid[!err.id, ], value)
   
-  long <- tidyr::gather(wide,key,value,-(1:3))
+  long <- tidyr::gather(wide,key,value,-(1:(ncol(param.grid)+1)))
   
   class(long) <- c("gapply", class(long))
   attr(long, "time") <- end-start

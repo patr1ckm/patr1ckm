@@ -121,7 +121,7 @@ collect <- function(dir=""){
   
   wide <- cbind(rep.grid[!err.id, ], value)
   
-  long <- tidyr::gather(wide,key,value,-(1:3))
+  long <- tidyr::gather(wide,key,value,-(1:(ncol(param.grid)+1)))
   
   class(long) <- c("gapply", class(long))
   attr(long, "time") <- NULL
