@@ -96,7 +96,10 @@ do.rep <- function(f,..., .reps,.verbose=1,.rep.cores=1, .eval=T){
   return(res.l)
 }
 
+#' @importFrom methods is
 is.error <- function(o){is(o, "try-error")}
+
+#' @importFrom methods is
 not.error <- function(o){!is(o, "try-error")}
 
 expand.reps.grid <- function(param.grid, .reps){
