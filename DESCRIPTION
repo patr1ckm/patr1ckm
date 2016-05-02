@@ -11,4 +11,5 @@ License: MIT
 LazyData: TRUE
 Suggests:
     testthat
+Imports: methods, stats
 RoxygenNote: 5.0.1
