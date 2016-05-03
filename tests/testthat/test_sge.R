@@ -31,16 +31,6 @@ system("Rscript doone.R 1 ")
 system("Rscript doone.R 2 ")
 setwd("../../")
 
-
-load("tests/tmp/results/cond_1/cond_1_reps_1-5.Rdata")
-load("tests/tmp/results/cond_2/cond_2_reps_1-5.Rdata")
-
-#system("rm -rf tests/tmp/*")
-
-out <- collect("tests/tmp/")
-summary(out)
-
-
 clean("tests/tmp/")
 ## Let's try a devious one with errors
 #do.one <- function(a=1,b=2,...){

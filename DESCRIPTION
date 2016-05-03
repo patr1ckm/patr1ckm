@@ -11,5 +11,5 @@ License: MIT
 LazyData: TRUE
 Suggests:
     testthat
-Imports: methods, stats, tidyr, dplyr
+Imports: methods, stats, tidyr, dplyr, utils
 RoxygenNote: 5.0.1

@@ -2,11 +2,13 @@
 % Please edit documentation in R/sge_setup.R
 \name{collect}
 \alias{collect}
-\title{Collect completed results files}
+\title{Submit jobs to SGE
+Collect completed results files}
 \usage{
 collect(dir = "")
 }
 \description{
+Submit jobs to SGE
 Collect completed results files
 }
 

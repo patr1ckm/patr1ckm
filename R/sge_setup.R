@@ -1,25 +1,40 @@
 ## Interactive setting up of simulation from gapply test object
 
 #' setup sge simulation
+#' @param object gapply object
 #' @param dir directory name relative to the current working directory, ends in '/'
+#' @param .reps total number of replications for each condition
+#' @param .chunks split \code{.reps} across this many nodes (see details)
+#' @param .mc.cores number of cores used to run replications in parallel
+#' @param .verbose verbose level
+#' @param .script.name name of script
+#' @details 
+#' The replications performed per chunk is computed as \code{ceiling(.reps/.chunks)}, which
+#' will produce more total replications than requested if \code{.reps} is not evenly divisible by \code{.chunks}
 #' @export
 setup <- function(object, dir="",  .reps=1, .chunks = 1, .mc.cores=1, .verbose=1, .script.name="doone.R"){
   param.grid <- attr(object,"param.grid")
-  chunk.grid <- param.grid[rep(1:nrow(param.grid), each=.chunks),,drop=F]
+  ## Chunk is the slowest varying factor. So adding replications
+  ## will be extending the grid within chunk by more chunks, which can then be 
+  ## mapped onto SGE_TASK_ID. Don't change this unless you found something better design wise.
+  chunk.grid <- param.grid[rep(1:nrow(param.grid), times=.chunks),,drop=F]
   chunk.grid$chunk <- rep(1:.chunks, each=nrow(param.grid))
   f <- attr(object,"f")
+  reps.per.chunk <- ceiling(.reps/.chunks)
   
   cmd <- paste0("mkdir -p ", dir, "results") 
   mysys(cmd)
   cmd <- paste0("mkdir -p ", dir, "SGE_Output")
   mysys(cmd)
   
-  write.submit(dir, script.name=.script.name, mc.cores=.mc.cores, tasks=nrow(param.grid))
+  write.submit(dir, script.name=.script.name, mc.cores=.mc.cores, tasks=nrow(chunk.grid))
 
   param.grid <- chunk.grid
+  attr(param.grid, "reps") <- reps.per.chunk*.chunks # total actual reps
+  attr(param.grid, "rpc") <- reps.per.chunk # reps per chunk
   save(param.grid, file=paste0(dir, "param_grid.Rdata"))
   
-  write.do.one(f=f, dir=dir, reps=.reps, mc.cores=.mc.cores, verbose=.verbose, script.name=.script.name)
+  write.do.one(f=f, dir=dir, reps=reps.per.chunk, mc.cores=.mc.cores, verbose=.verbose, script.name=.script.name)
 }
 
 
@@ -54,31 +69,30 @@ write.do.one <- function(f, dir, reps=1, mc.cores=1, verbose=1, script.name="doo
   library(patr1ckm)
   args <- as.numeric(commandArgs(trailingOnly=TRUE))
   cond <- args[1]
-  reps <- ", reps,"
+  reps <- ", reps," # this is reps per chunk
   load('param_grid.Rdata')
   params <- param.grid[cond,]
   rep.id <- (reps*(params$chunk-1)+1):(reps*params$chunk)
   params$chunk <- NULL # because f doesn't take chunk usually
   res.l <- do.rep(f, as.list(params), .reps=reps, .rep.cores=", mc.cores, ", .verbose=", verbose," )
-  dir <- paste0('results/cond_', cond,'/')
-  system(paste0('mkdir -p ', dir))
-  fn <- paste0(dir, 'cond_', cond,'_reps_',rep.id[1],'-', rep.id[reps],'.Rdata')
+  dir <- paste0('results/')
+  fn <- paste0(dir, cond,'.Rdata')
   save(res.l, file=fn)")
   
   cat(temp, file=paste0(dir, script.name))
 }
 
 #' Submit jobs to SGE
-#' @export
-submit <- function(dir=""){
-  wd <- getwd()
-  setwd(dir)
-  cmd <- paste0("qsub submit")
-  mysys(cmd)
-  setwd(wd)
-}
+#submit <- function(dir=""){
+#  wd <- getwd()
+#  setwd(dir)
+#  cmd <- paste0("qsub submit")
+#  mysys(cmd)
+#  setwd(wd)
+#}
 
 #' Collect completed results files
+#' 
 #' @export
 #' @importFrom gtools mixedsort
 #' @importFrom tidyr gather
@@ -87,49 +101,50 @@ collect <- function(dir=""){
   
   rdir <- paste0(dir, "results/")
   conds.files <- gtools::mixedsort(paste0(rdir,list.files(rdir)))
-  res.l <- list()           # list of the results from each condition 
-
-  na.reps <- function(fn){
-    if(file.exists(fn)){
-      load(fn)
-      return(res.l)
-    } else return(list(NA))
-  }
-  
+  cond.l <- list()           # list of the results from each condition 
   for(i in 1:length(conds.files)){
-    rep.files <- gtools::mixedsort(list.files(conds.files[[i]]))
-    reps.list <- list()
-    for(j in 1:length(rep.files)){
-      fn <- paste0(conds.files[i], "/", rep.files[j])
-      reps.list[[j]] <- na.reps(fn)
-    }
-    res.l[i] <- reps.list
+      fn <- paste0(conds.files[i])
+      load(fn)
+      cond.l[[i]] <- res.l
   }
-  .reps <- length(reps.list[[1]]) # Since this is from do.rep, will always be of length reps
-  res.l <- unlist(res.l, recursive=FALSE) # should be conds*reps long
   
-  param.grid$chunk <- NULL
-  rep.grid <- param.grid[rep(1:nrow(param.grid),each=.reps), , drop=F]
-  rep.grid$rep  <- rep(1:.reps, times=nrow(param.grid))
+  cond.l <- unlist(cond.l, recursive=F) 
   
-  err.id <- unlist(lapply(res.l, is.error))
+  cond.idx <- as.numeric(gsub(".Rdata", "", basename(conds.files))) # completed conditions
+  cond.grid <- param.grid[cond.idx,]
+  
+  reps <- attr(param.grid, "reps") # Since this is from do.rep, will always be of length reps
+  rpc <- attr(param.grid, "rpc")
+
+  rep.id <- function(chunk, reps){ return((reps*(chunk-1)+1):(reps*chunk)) }
+  
+  reps <- unlist(lapply(cond.grid$chunk, rep.id, reps=rpc))
+  rep.grid <- cond.grid[rep(1:nrow(cond.grid), each=rpc),]
+  rep.grid$chunk <- NULL # the actual chunk doesn't matter since it just groups replications
+  rep.grid$rep  <- reps
+  
+  err.id <- unlist(lapply(cond.l, is.error))
   err.param <- rep.grid[which(err.id),]
-  err.list <- res.l[err.id]
+  err.list <- cond.l[err.id]
   names(err.list) <- which(err.id)
   
-  value <- as.data.frame(do.call(rbind, res.l[!err.id])) # automatic naming of unnamed returns to V1,V2, etc
+  value <- as.data.frame(do.call(rbind, cond.l[!err.id])) # automatic naming of unnamed returns to V1,V2, etc
   
   wide <- cbind(rep.grid[!err.id, ], value)
   
   long <- tidyr::gather(wide,key,value,-(1:(ncol(param.grid)+1)))
   
+  perc.complete <- length(cond.idx)/nrow(param.grid)
+  
   class(long) <- c("gapply", class(long))
-  attr(long, "time") <- NULL
-  attr(long, "arg.names") <- colnames(param.grid)
-  attr(long, "f") <- NULL
-  attr(long, "grid") <- param.grid
-  attr(long, "err") <- lapply(err.list,as.character)
-  attr(long, ".reps", .reps)
+  #attr(long, "time") <- NULL
+  attr(long, "arg.names") <- head(colnames(param.grid),-1)
+  #attr(long, "f") <- NULL
+  #attr(long, "grid") <- param.grid
+  attr(long, "err") <- unlist(err.list)
+  attr(long, "reps") <- attr(param.grid, "reps")
+  attr(long, "rpc") <- rpc
+  attr(long, "perc.complete") <- perc.complete
   
   return(long)
 }
@@ -139,8 +154,11 @@ collect <- function(dir=""){
 #' @export
 clean <- function(dir){
   rdir <- paste0(dir, "results/")
+  sdir <- paste0(dir, "SGE_Output/")
   if(file.exists(rdir)){
-    cmd <- paste0("rm -rf ", rdir)
+    cmd <- paste0("rm -rf ", rdir, "*")
+    mysys(cmd)
+    cmd <- paste0("rm -rf ", sdir, "*")
     mysys(cmd)
   }
 }
@@ -158,4 +176,13 @@ sge <- function(dir="tmp/"){
   setup(out, dir)
   submit(dir)
 }
+
+#' Return parameter grid
+#' 
+#' @export
+param.grid <- function(dir="tests/tmp/"){
+  load(paste0(dir, "param_grid.Rdata"))
+  return(param.grid)
+}
+
 

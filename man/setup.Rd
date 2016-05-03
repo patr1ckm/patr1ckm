@@ -8,9 +8,25 @@ setup(object, dir = "", .reps = 1, .chunks = 1, .mc.cores = 1,
   .verbose = 1, .script.name = "doone.R")
 }
 \arguments{
+\item{object}{gapply object}
+
 \item{dir}{directory name relative to the current working directory, ends in '/'}
+
+\item{.reps}{total number of replications for each condition}
+
+\item{.chunks}{split \code{.reps} across this many nodes (see details)}
+
+\item{.mc.cores}{number of cores used to run replications in parallel}
+
+\item{.verbose}{verbose level}
+
+\item{.script.name}{name of script}
 }
 \description{
 setup sge simulation
+}
+\details{
+The replications performed per chunk is computed as \code{ceiling(.reps/.chunks)}, which
+will produce more total replications than requested if \code{.reps} is not evenly divisible by \code{.chunks}
 }
 
