@@ -137,7 +137,7 @@ collect <- function(dir=getwd()){
   
   wide <- cbind(rep.grid[!err.id, ], value)
   
-  long <- tidyr::gather(wide,key,value,-(1:(ncol(param.grid)+1)))
+  long <- tidyr::gather(wide,key,value,-(1:(ncol(param.grid))))
   
   perc.complete <- length(cond.idx)/nrow(param.grid)
   perc.err <- mean(err.id)
@@ -147,7 +147,7 @@ collect <- function(dir=getwd()){
   attr(long, "arg.names") <- head(colnames(param.grid),-1)
   #attr(long, "f") <- NULL
   #attr(long, "grid") <- param.grid
-  attr(long, "err") <- as.data.frame(unlist(err.list))
+  attr(long, "err") <- data.frame(msg=unlist(err.list))
   attr(long, "reps") <- attr(param.grid, "reps")
   attr(long, "rpc") <- rpc
   attr(long, "perc.complete") <- perc.complete
