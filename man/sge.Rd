@@ -4,7 +4,7 @@
 \alias{sge}
 \title{sge}
 \usage{
-sge(dir = "tmp/")
+sge(dir = getwd())
 }
 \description{
 sge

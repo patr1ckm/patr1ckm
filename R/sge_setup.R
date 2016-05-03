@@ -12,8 +12,9 @@
 #' The replications performed per chunk is computed as \code{ceiling(.reps/.chunks)}, which
 #' will produce more total replications than requested if \code{.reps} is not evenly divisible by \code{.chunks}
 #' @export
-setup <- function(object, dir="",  .reps=1, .chunks = 1, .mc.cores=1, .verbose=1, .script.name="doone.R"){
+setup <- function(object, dir=getwd(),  .reps=1, .chunks = 1, .mc.cores=1, .verbose=1, .script.name="doone.R"){
   param.grid <- attr(object,"param.grid")
+  dir <- paste0(dir, "/")
   ## Chunk is the slowest varying factor. So adding replications
   ## will be extending the grid within chunk by more chunks, which can then be 
   ## mapped onto SGE_TASK_ID. Don't change this unless you found something better design wise.
@@ -49,7 +50,7 @@ mysys <- function(cmd){
   system(cmd)
 }
 
-write.submit <- function(dir="", script.name="doone.R", mc.cores=1, tasks=1){
+write.submit <- function(dir, script.name="doone.R", mc.cores=1, tasks=1){
   cmd <- paste0("touch ", dir, "submit")
   mysys(cmd)
   temp <- paste0("#!/bin/bash
@@ -99,7 +100,8 @@ submit <- function(dir=getwd()){
 #' @export
 #' @importFrom gtools mixedsort
 #' @importFrom tidyr gather
-collect <- function(dir=""){
+collect <- function(dir=getwd()){
+  dir <- paste0(dir, "/")
   load(paste0(dir, "param_grid.Rdata"))
   
   rdir <- paste0(dir, "results/")
@@ -138,16 +140,18 @@ collect <- function(dir=""){
   long <- tidyr::gather(wide,key,value,-(1:(ncol(param.grid)+1)))
   
   perc.complete <- length(cond.idx)/nrow(param.grid)
+  perc.err <- mean(err.id)
   
   class(long) <- c("gapply", class(long))
   #attr(long, "time") <- NULL
   attr(long, "arg.names") <- head(colnames(param.grid),-1)
   #attr(long, "f") <- NULL
   #attr(long, "grid") <- param.grid
-  attr(long, "err") <- unlist(err.list)
+  attr(long, "err") <- as.data.frame(unlist(err.list))
   attr(long, "reps") <- attr(param.grid, "reps")
   attr(long, "rpc") <- rpc
   attr(long, "perc.complete") <- perc.complete
+  attr(long, "perc.err") <- perc.err
   
   return(long)
 }
@@ -155,7 +159,8 @@ collect <- function(dir=""){
 #' Cleans results
 #' @param dir project directory name followed by 'slash'
 #' @export
-clean <- function(dir){
+clean <- function(dir=getwd()){
+  dir <- paste0(dir, "/")
   rdir <- paste0(dir, "results/")
   sdir <- paste0(dir, "SGE_Output/")
   if(file.exists(rdir)){
@@ -169,7 +174,7 @@ clean <- function(dir){
 #' sge
 #' 
 #' @export
-sge <- function(dir="tmp/"){
+sge <- function(dir=getwd()){
   f <- function(x,y){
     Sys.sleep(.5)
     stopifnot(x < 5)
@@ -183,8 +188,8 @@ sge <- function(dir="tmp/"){
 #' Return parameter grid
 #' 
 #' @export
-param.grid <- function(dir="tests/tmp/"){
-  load(paste0(dir, "param_grid.Rdata"))
+param.grid <- function(dir=getwd()){
+  load(paste0(dir, "/param_grid.Rdata"))
   return(param.grid)
 }
 

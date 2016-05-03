@@ -4,7 +4,7 @@
 \alias{collect}
 \title{Collect completed results files}
 \usage{
-collect(dir = "")
+collect(dir = getwd())
 }
 \description{
 Collect completed results files

@@ -4,7 +4,7 @@
 \alias{clean}
 \title{Cleans results}
 \usage{
-clean(dir)
+clean(dir = getwd())
 }
 \arguments{
 \item{dir}{project directory name followed by 'slash'}

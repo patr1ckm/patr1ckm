@@ -4,7 +4,7 @@
 \alias{setup}
 \title{setup sge simulation}
 \usage{
-setup(object, dir = "", .reps = 1, .chunks = 1, .mc.cores = 1,
+setup(object, dir = getwd(), .reps = 1, .chunks = 1, .mc.cores = 1,
   .verbose = 1, .script.name = "doone.R")
 }
 \arguments{
