@@ -38,10 +38,12 @@ setup <- function(object, dir="",  .reps=1, .chunks = 1, .mc.cores=1, .verbose=1
 }
 
 
+#' @export
 qst <- function(){
   mysys("qst")
 }
 
+#' @export
 mysys <- function(cmd){
   cat(cmd,fill=T)
   system(cmd)
@@ -83,13 +85,14 @@ write.do.one <- function(f, dir, reps=1, mc.cores=1, verbose=1, script.name="doo
 }
 
 #' Submit jobs to SGE
-#submit <- function(dir=""){
-#  wd <- getwd()
-#  setwd(dir)
-#  cmd <- paste0("qsub submit")
-#  mysys(cmd)
-#  setwd(wd)
-#}
+#' @export
+submit <- function(dir=getwd()){
+  wd <- getwd()
+  setwd(dir)
+  cmd <- paste0("qsub submit")
+  mysys(cmd)
+  setwd(wd)
+}
 
 #' Collect completed results files
 #' 
