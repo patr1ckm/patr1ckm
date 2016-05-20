@@ -1,9 +1,6 @@
 
 context("gapply")
 
-## Single unnamed return value
-## names assigned by as.data.frame (V1)
-
 ## write tests for different numbers of parameters! wtf
 
 do.one <- function(a=1,b=2){a+b}
@@ -20,14 +17,12 @@ r <- do.rep(do.one,list(a=1,b=2), .reps=2)
 expect_null(names(r))
 
 do.one <- function(a=1,b=2){
-  if(a==1) stop("asdf")
-  a
+  if(a==1){ stop("asdf")}
+  c(a+b, a-b)
 }
-r <- do.rep(do.one,list(a=1,b=2), .reps=2)
-expect_is(r[[1]], "try-error")
 out <- gapply(do.one, a=c(2,1), b=2, .reps=2, .verbose=0)
-expect_is(attr(out, "err")[[1]], "character")
-
+expect_true(!is.null(attr(out, "err")))
+expect_true(all(is.na(out[out$a==1,"value"])))
 
 do.one <- function(a=1,b=2){c(a+b)}
 out <- gapply(do.one, a=1:2, b=2, .reps=2, .verbose=0)
@@ -77,6 +72,9 @@ out <- do.rep(do.one,list(a=1,b=2), .reps=3, .verbose=0, .eval=F)
 expect_equal(unlist(out), rep(NA,3))
 out <- gapply(do.one,.reps=3, a=1,b=2,.verbose=0, .eval=F)
 expect_equal(unlist(out$value), rep(NA,3))
+
+# test data frame returns
+
 
 
 
