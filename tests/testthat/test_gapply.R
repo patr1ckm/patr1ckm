@@ -18,11 +18,17 @@ expect_null(names(r))
 
 do.one <- function(a=1,b=2){
   if(a==1){ stop("asdf")}
+  if(b==2){warning("this is a warning")}
   c(a+b, a-b)
 }
 out <- gapply(do.one, a=c(2,1), b=2, .reps=2, .verbose=0)
 expect_true(!is.null(attr(out, "err")))
-expect_true(all(is.na(out[out$a==1,"value"])))
+expect_true(!is.null(attr(out, "warn")))
+expect_true(all(as.numeric(names(attr(out,"err"))) == c(3,4)))
+expect_true(all(as.numeric(names(attr(out,"warn"))) == c(1,2)))
+expect_true(all(is.na(out[out$a==1,"value"])))  # all errors return NA
+expect_true(all(out[out$a==2,"value"] == c(4,4,0,0))) # warnings still return values
+
 
 do.one <- function(a=1,b=2){c(a+b)}
 out <- gapply(do.one, a=1:2, b=2, .reps=2, .verbose=0)

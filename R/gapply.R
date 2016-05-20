@@ -48,6 +48,10 @@ gapply <- function(f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T){
   err.list <- res.l[err.id]
   names(err.list) <- which(err.id)
   
+  warn.id <- unlist(lapply(res.l, is.warn))
+  warn.list <- res.l[warn.id]
+  names(warn.list) <- which(warn.id)
+  
   value <- as.data.frame(do.call(rbind, res.l)) # automatic naming of unnamed returns to V1,V2, etc
   
   wide <- cbind(rep.grid, value)
@@ -59,7 +63,8 @@ gapply <- function(f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T){
   attr(long, "arg.names") <- colnames(param.grid)
   attr(long, "f") <- f
   attr(long, "param.grid") <- param.grid
-  attr(long, "err") <- lapply(err.list,as.character)
+  attr(long, "err") <- err.list
+  attr(long, "warn") <- warn.list
   attr(long, ".reps") <- .reps
   return(long)
 }
