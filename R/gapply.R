@@ -39,6 +39,7 @@ gapply <- function(f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T){
                             .reps=.reps, mc.cores=.mc.cores, .verbose=.verbose, 
                             .eval=.eval, .rep.cores=1)
   end <- proc.time()
+  
   res.l <- unlist(res.l, recursive=FALSE) # should be conds*reps long
   rep.grid <- param.grid[rep(1:nrow(param.grid),each=.reps), , drop=F]
   rep.grid$rep  <- rep(1:.reps, times=nrow(param.grid))
