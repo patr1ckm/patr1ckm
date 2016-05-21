@@ -40,23 +40,40 @@ gapply <- function(f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T){
                             .eval=.eval, .rep.cores=1)
   end <- proc.time()
   
-  res.l <- unlist(res.l, recursive=FALSE) # should be conds*reps long
-  rep.grid <- param.grid[rep(1:nrow(param.grid),each=.reps), , drop=F]
-  rep.grid$rep  <- rep(1:.reps, times=nrow(param.grid))
+
+  # take off one level of nesting and make sure all elements are data.frame
+  res.l <- unlist(res.l, recursive=FALSE)
+  rc <- length(res.l) # reps * conditions
   
-  err.id <- unlist(lapply(res.l, is.error))
-  err.list <- res.l[err.id]
-  names(err.list) <- which(err.id)
+  err <- lapply(res.l, function(r){attr(r, "err")})
+  err.id <-  which(unlist(lapply(err, function(x){!is.null(x)})))
+  err.list <- err[err.id]
+  names(err.list) <- err.id
   
-  warn.id <- unlist(lapply(res.l, is.warn))
-  warn.list <- res.l[warn.id]
-  names(warn.list) <- which(warn.id)
+  warn <- lapply(res.l, function(r){attr(r, "warn")})
+  warn.id <- which(unlist(lapply(warn, function(x){!is.null(x)})))
+  warn.list <- warn[warn.id]
+  names(warn.list) <- warn.id
   
   value <- as.data.frame(do.call(rbind, res.l)) # automatic naming of unnamed returns to V1,V2, etc
+
+  rep.grid <- param.grid[rep(1:nrow(param.grid),each=.reps), , drop=F]
+  rep.grid$rep  <- rep(1:.reps, times=nrow(param.grid))
+  gridl <- list()
+  methodl <- list()
+  for(i in 1:length(res.l)){
+    reprow <- as.data.frame(res.l[[i]])
+    nm <- nrow(reprow)
+    methodl[[i]] <- rownames(reprow)
+    gridl[[i]] <- rep.grid[rep(i, nm), ]
+  }
+  mgrid <- do.call(rbind, gridl)
+  method <- unlist(methodl)
+  mgrid$method <- method
+
+  wide <- cbind(mgrid, value)
   
-  wide <- cbind(rep.grid, value)
-  
-  long <- tidyr::gather(wide,key,value,-(1:(ncol(param.grid)+1)))
+  long <- tidyr::gather(wide,key,value,-(1:(ncol(param.grid)+2)))
   
   class(long) <- c("gapply", class(long))
   attr(long, "time") <- end-start
@@ -103,6 +120,7 @@ do.rep <- function(f,..., .reps,.verbose=1,.rep.cores=1, .eval=T){
   return(res.l)
 }
 
+#' @export
 wrapWE <- function(fun){
   function(...) {
     warn <- err <- NULL
