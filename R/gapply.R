@@ -35,30 +35,53 @@ gapply <- function(f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T){
   param.ls <- split(param.grid, 1:nrow(param.grid))
   names(param.ls) <- NULL
   start <- proc.time()
-  res.l <- parallel::mclapply(param.ls, do.rep, f=f, 
+  res.l <- parallel::mclapply(param.ls, do.rep, f=wrapWE(f), 
                             .reps=.reps, mc.cores=.mc.cores, .verbose=.verbose, 
                             .eval=.eval, .rep.cores=1)
   end <- proc.time()
-  res.l <- unlist(res.l, recursive=FALSE) # should be conds*reps long
+  
+
+  # take off one level of nesting and make sure all elements are data.frame
+  res.l <- unlist(res.l, recursive=FALSE)
+  rc <- length(res.l) # reps * conditions
+  
+  err <- lapply(res.l, function(r){attr(r, "err")})
+  err.id <-  which(unlist(lapply(err, function(x){!is.null(x)})))
+  err.list <- err[err.id]
+  names(err.list) <- err.id
+  
+  warn <- lapply(res.l, function(r){attr(r, "warn")})
+  warn.id <- which(unlist(lapply(warn, function(x){!is.null(x)})))
+  warn.list <- warn[warn.id]
+  names(warn.list) <- warn.id
+  
+  value <- as.data.frame(do.call(rbind, res.l)) # automatic naming of unnamed returns to V1,V2, etc
+
   rep.grid <- param.grid[rep(1:nrow(param.grid),each=.reps), , drop=F]
   rep.grid$rep  <- rep(1:.reps, times=nrow(param.grid))
+  gridl <- list()
+  methodl <- list()
+  for(i in 1:length(res.l)){
+    reprow <- as.data.frame(res.l[[i]])
+    nm <- nrow(reprow)
+    methodl[[i]] <- rownames(reprow)
+    gridl[[i]] <- rep.grid[rep(i, nm), ]
+  }
+  mgrid <- do.call(rbind, gridl)
+  method <- unlist(methodl)
+  mgrid$method <- method
+
+  wide <- cbind(mgrid, value)
   
-  err.id <- unlist(lapply(res.l, is.error))
-  err.list <- res.l[err.id]
-  names(err.list) <- which(err.id)
-  
-  value <- as.data.frame(do.call(rbind, res.l[!err.id])) # automatic naming of unnamed returns to V1,V2, etc
-  
-  wide <- cbind(rep.grid[!err.id, ], value)
-  
-  long <- tidyr::gather(wide,key,value,-(1:(ncol(param.grid)+1)))
+  long <- tidyr::gather(wide,key,value,-(1:(ncol(param.grid)+2)))
   
   class(long) <- c("gapply", class(long))
   attr(long, "time") <- end-start
   attr(long, "arg.names") <- colnames(param.grid)
   attr(long, "f") <- f
   attr(long, "param.grid") <- param.grid
-  attr(long, "err") <- lapply(err.list,as.character)
+  attr(long, "err") <- err.list
+  attr(long, "warn") <- warn.list
   attr(long, ".reps") <- .reps
   return(long)
 }
@@ -80,11 +103,12 @@ gapply <- function(f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T){
 #' @importFrom parallel mclapply
 #' @importFrom dplyr rbind_all as.tbl
 
+
 do.rep <- function(f,..., .reps,.verbose=1,.rep.cores=1, .eval=T){
   if(.verbose %in% c(2,3) & .eval){cat(paste(names(...),"=", ...),fill=T)}
   if(.eval){
     res.l <- parallel::mclapply(1:(.reps),function(r, f, ...){ 
-      (try(do.call(f,...)))}, f=f, ..., mc.cores=.rep.cores)
+      do.call(f,...)}, f=f, ..., mc.cores=.rep.cores)
   } else {
     nothing <- function(...){c(NA)}
     res.l <- lapply(1:.reps, function(r, ...) do.call(nothing, ...), ...)
@@ -96,15 +120,30 @@ do.rep <- function(f,..., .reps,.verbose=1,.rep.cores=1, .eval=T){
   return(res.l)
 }
 
-#' @importFrom methods is
-is.error <- function(o){is(o, "try-error")}
+#' @export
+wrapWE <- function(fun){
+  function(...) {
+    warn <- err <- NULL
+    res <- withCallingHandlers(
+      tryCatch(fun(...), error=function(e) {
+        err <<- conditionMessage(e)
+        NA
+      }), warning=function(w) {
+        warn <<- append(warn, conditionMessage(w))
+        invokeRestart("muffleWarning")
+      })
+    attr(res, "warn") <- warn
+    attr(res, "err")  <- err
+    res
+  }
+}
 
-#' @importFrom methods is
-not.error <- function(o){!is(o, "try-error")}
+
+is.error <- function(x){!is.null(attr(x, "err"))}
+is.warn <- function(x){!is.null(attr(x, "warn"))}
 
 expand.reps.grid <- function(param.grid, .reps){
   rep.grid <- param.grid[rep(1:nrow(param.grid),each=.reps), , drop=F]
   rep.grid$rep  <- rep(1:.reps, times=nrow(param.grid))
   return(rep.grid)
 }
-
