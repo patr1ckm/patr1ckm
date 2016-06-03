@@ -53,14 +53,14 @@ do.one <- function(a=1,b=2){c(a+b,a-b)}
 out <- gapply(do.one,.reps=2, a=1:2,b=2,.verbose=0)
 expect_equal(colnames(out),c("a","b","rep", "method", "key", "value"))
 expect_equivalent(unique(out[,c("a","b")]), grid)
-expect_equal(unique(out$key),factor(c("V1","V2"),levels=c("V1","V2")))
+expect_equal(unique(out$key),c("V1","V2"))
 
 ## Multiple named return values
 do.one <- function(a=1,b=2){data.frame(sum=a+b,sub=a-b)}
 out <- gapply(do.one,.reps=2, a=1:2,b=2,.verbose=0)
 expect_equal(colnames(out),c("a","b","rep","method", "key","value"))
 # Test that key is a factor, and has the correct levels
-expect_equal(unique(out$key),factor(c("sum","sub"),levels=c("sum","sub")))
+expect_equal(unique(out$key),c("sum","sub"))
 
 ## One row in param.grid with multiple reps
 do.one <- function(a=1,b=2){data.frame(sum=a+b,sub=a-b)}
