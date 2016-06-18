@@ -6,7 +6,7 @@
 #' @return Prints the means over all reps for each condition and returns it invisibly. Also prints the estimated time to scale up to x reps
 #' @importFrom dplyr group_by_ summarize
 #' @importFrom tidyr %>%
-#' @export
+
 summary.gapply <- function(object, .reps=NULL, .fun=mean, .key=NULL){
   ns <- c(attr(object, 'arg.names'),"key")
   if(is.null(.key)){
@@ -36,7 +36,7 @@ summary.gapply <- function(object, .reps=NULL, .fun=mean, .key=NULL){
 #' Plot simulation object
 #' 
 #' Automatic plotting method for aggregating over replications
-#' @export
+
 plot.gapply <- function(object, .fun=mean, .key=NULL){
   require(ggplot2)
   sum <- summary(object, .fun=.fun, .key=.key)
@@ -97,7 +97,7 @@ plot.gapply <- function(object, .fun=mean, .key=NULL){
 #' Estimate time for a given number of reps
 #' @param object gapply object
 #' @param nreps number of reps to scale to
-#' @export
+
 estimate.time <- function(object, nreps=NULL){
   if(is.null(nreps)){ nreps <- c(50,100,500,1000,5000,10000)}
   max.reps <- max(object$rep)

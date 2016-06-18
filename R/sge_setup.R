@@ -11,7 +11,7 @@
 #' @details 
 #' The replications performed per chunk is computed as \code{ceiling(.reps/.chunks)}, which
 #' will produce more total replications than requested if \code{.reps} is not evenly divisible by \code{.chunks}
-#' @export
+
 setup <- function(object, dir=getwd(),  .reps=1, .chunks = 1, .mc.cores=1, .verbose=1, .script.name="doone.R"){
   param.grid <- attr(object,"param.grid")
   dir <- paste0(dir, "/")
@@ -39,12 +39,12 @@ setup <- function(object, dir=getwd(),  .reps=1, .chunks = 1, .mc.cores=1, .verb
 }
 
 
-#' @export
+
 qst <- function(){
   mysys("qst")
 }
 
-#' @export
+
 mysys <- function(cmd){
   cat(cmd,fill=T)
   system(cmd)
@@ -86,7 +86,7 @@ write.do.one <- function(f, dir, reps=1, mc.cores=1, verbose=1, script.name="doo
 }
 
 #' Submit jobs to SGE
-#' @export
+
 submit <- function(dir=getwd()){
   wd <- getwd()
   setwd(dir)
@@ -97,7 +97,6 @@ submit <- function(dir=getwd()){
 
 #' Collect completed results files
 #' 
-#' @export
 #' @importFrom gtools mixedsort
 #' @importFrom tidyr gather
 collect <- function(dir=getwd()){
@@ -158,7 +157,7 @@ collect <- function(dir=getwd()){
 
 #' Cleans results
 #' @param dir project directory name followed by 'slash'
-#' @export
+
 clean <- function(dir=getwd()){
   dir <- paste0(dir, "/")
   rdir <- paste0(dir, "results/")
@@ -173,7 +172,7 @@ clean <- function(dir=getwd()){
 
 #' sge
 #' 
-#' @export
+
 sge <- function(dir=getwd()){
   f <- function(x,y){
     Sys.sleep(.5)
@@ -187,7 +186,7 @@ sge <- function(dir=getwd()){
 
 #' Return parameter grid
 #' 
-#' @export
+
 param.grid <- function(dir=getwd()){
   load(paste0(dir, "/param_grid.Rdata"))
   return(param.grid)

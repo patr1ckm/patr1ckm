@@ -26,7 +26,7 @@
 #' @examples
 #' do.one <- function(a=1,b=2){c(sum=a+b,sub=a-b)}
 #' gapply(do.one, a=1:4,b=2:3, .reps=5)
-#' @export
+
 #' @importFrom tidyr gather
 #' @importFrom parallel mclapply
 #' @importFrom dplyr rbind_all
@@ -99,7 +99,7 @@ gapply <- function(f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T){
 #' @param .verbose If \code{1} (default), prints a \code{.} with every completed condition. 
 #' If \code{2}, prints the arguments corresponding to the completed condition. 
 #' If \code{3}, prints the arguments and results of the completed condition.
-#' @export
+
 #' @importFrom parallel mclapply
 #' @importFrom dplyr rbind_all as.tbl
 
@@ -120,7 +120,7 @@ do.rep <- function(f,..., .reps,.verbose=1,.rep.cores=1, .eval=T){
   return(res.l)
 }
 
-#' @export
+
 wrapWE <- function(fun){
   function(...) {
     warn <- err <- NULL
