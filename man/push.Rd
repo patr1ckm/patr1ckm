@@ -2,14 +2,14 @@
 % Please edit documentation in R/reup.R
 \name{push}
 \alias{push}
-\title{Push to github}
+\title{Push changes to tracked files to master branch on github}
 \usage{
-push(m, f = NULL)
+push(msg, f = NULL)
 }
 \arguments{
 \item{m}{commit message}
 }
 \description{
-Push to github
+Push changes to tracked files to master branch on github
 }
 

@@ -4,7 +4,7 @@
 \alias{reup}
 \title{Quickly reinstall the already loaded package from github}
 \usage{
-reup(x)
+reup(x, user = "patr1ckm")
 }
 \description{
 Quickly reinstall the already loaded package from github

@@ -7,7 +7,7 @@
 #' @return Called for the side effect
 #' @export
 #'
-putArgs <- function(f,env=.GlobalEnv) {
+put.args <- function(f,env=.GlobalEnv) {
   list2env(as.list(formals(f)),env=env)
   #mapply(FUN=assign,x=names(formals(f)),value=formals(f),MoreArgs=list(env=.GlobalEnv))
 }

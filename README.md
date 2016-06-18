@@ -5,21 +5,24 @@ A few handy R functions
 
 ### Printing big objects
 - `hh` - return a small number of list elements, rows and/or columns
-- `ht` - return a small number of non-overlapping rows and columns from top/bottom and front/back of matrix or front and back elements in a list
-- `sh` - return a sample of rows and/or columns
-- `hstr` - compute `str` on the first n list elements or columns
-- `sstr` - compute `str` on a sample of the first `n` list elements or columns
+- `ht` - return a small number of non-overlapping rows and columns from top/bottom and 
 
-### Working with lists
-- `le` - return the `i`th element from each element of a nested list (i.e. x[[1]][[i]])
-- `ule` - return the `i`th element from each element of a nested list, and unlist
+### Plots
+- `cbb`, `cb` lists of colorblind friendly colors
 
-## Simulations
-- `gapply` apply the function `f` `reps` times over grid of arguments in parallel
-
-### Handy R idioms
-- `lsos` - print objects and sizes (from `dmisc`, others)
+### Data Analysis
 - `applyna` - apply `is.na` to margins of a matrix
+- `pw.tables` - compute pairwise tables for all pairs of variables
+
+### Development
+- `reup` re-install an already loaded package from github
+- `push` add, commit, and push changes to tracked files to github
+- `commit` add and commit changes to tracked files
+
+### Other R idioms
+- `lsos` - print objects and sizes (from `dmisc`, others)
+- `clear.warnings` - to clear warnings
+- `put.args` - put the default arguments of a function into an environment (default .GlobalEnv)
 - `is.special` - check if `x` is `NA`, `NaN`, or `Inf`
 - `fac2num` - convert factors to numbers (from `kbroman`)
 - `vec2sym` - create a symmetric matrix from a vector of the elements of the upper or lower triangle, by row or column
