@@ -2,7 +2,7 @@
 #' 
 #' @export
 reup <- function(x, user="patr1ckm"){
-  detach(paste0("package:", x))
+  detach(paste0("package:", x), character.only = T, unload = T)
   remove.packages(x)
   #system("R CMD REMOVE patr1ckm")
   devtools::install_github(paste0(user, "/", x))
